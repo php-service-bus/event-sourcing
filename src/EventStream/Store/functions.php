@@ -122,7 +122,6 @@ function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregat
  */
 function streamToStoredRepresentation(EventSerializer $serializer, AggregateEventStream $aggregateEvent): StoredAggregateEventStream
 {
-    /** @var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $preparedEvents */
     $preparedEvents = \array_map(
         function(AggregateEvent $aggregateEvent) use ($serializer): StoredAggregateEvent
         {
@@ -131,9 +130,16 @@ function streamToStoredRepresentation(EventSerializer $serializer, AggregateEven
         $aggregateEvent->events
     );
 
+    /**
+     * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $eventClass
+     * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent> $preparedEvents
+     */
+
+    $eventClass = \get_class($aggregateEvent->id);
+
     return StoredAggregateEventStream::create(
         (string) $aggregateEvent->id,
-        \get_class($aggregateEvent->id),
+        $eventClass,
         $aggregateEvent->aggregateClass,
         $preparedEvents,
         (string) datetimeToString($aggregateEvent->createdAt)

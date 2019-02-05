@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0d1eccfe15646f0af9b16f9f8dfc76ce",
+    "hash": "21ada630b94c47883c338bc35dcd7323",
     "content-hash": "432beea4846d2f09acf310d9e5dd0700",
     "packages": [
         {
@@ -3492,12 +3492,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "6ae2ee809c4975b8424159291a52b17d9142a3cc"
+                "reference": "6033345694727d7c3cf84adc76507c3785ed0295"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/6ae2ee809c4975b8424159291a52b17d9142a3cc",
-                "reference": "6ae2ee809c4975b8424159291a52b17d9142a3cc",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/6033345694727d7c3cf84adc76507c3785ed0295",
+                "reference": "6033345694727d7c3cf84adc76507c3785ed0295",
                 "shasum": ""
             },
             "require": {
@@ -3561,7 +3561,7 @@
                 "inspection",
                 "php"
             ],
-            "time": "2019-02-04 14:57:02"
+            "time": "2019-02-05 05:36:57"
         },
         {
             "name": "webmozart/glob",

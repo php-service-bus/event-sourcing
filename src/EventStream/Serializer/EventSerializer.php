@@ -33,7 +33,7 @@ interface EventSerializer
     /**
      * Restore event object
      *
-     * @psalm-param class-string<\ServiceBus\Common\Messages\Event>
+     * @psalm-param class-string<\ServiceBus\Common\Messages\Event> $eventClass
      *
      * @param string $eventClass
      * @param string $payload
