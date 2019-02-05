@@ -1,0 +1,61 @@
+{
+  "name": "php-service-bus/event-sourcing",
+  "description": "Event Sourcing implementation",
+  "type": "library",
+  "keywords": [
+    "async-php",
+    "command-bus",
+    "messaging",
+    "event-sourcing"
+  ],
+  "authors": [
+    {
+      "name": "Masiukevich Maksim",
+      "email": "dev@async-php.com",
+      "homepage": "https://github.com/mmasiukevich",
+      "role": "Maintainer"
+    }
+  ],
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "ServiceBus\\EventSourcing\\": "src/"
+    },
+    "files": [
+      "src/EventStream/Store/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ServiceBus\\EventSourcing\\Tests\\": "tests/"
+    },
+    "files": [
+      "src/EventStream/Store/functions.php"
+    ]
+  },
+  "require": {
+    "php": ">=7.2",
+    "php-service-bus/common": "dev-master",
+    "php-service-bus/storage-common": "dev-master",
+    "php-service-bus/message-serializer": "dev-master"
+  },
+  "require-dev": {
+    "php-service-bus/storage-sql": "dev-master",
+    "doctrine/dbal": "^v2.6",
+    "phpunit/phpunit": "^7",
+    "vimeo/psalm": "dev-master"
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "scripts": {
+    "psalm": "./vendor/bin/psalm --config=psalm.xml",
+    "phpunit": "./vendor/bin/phpunit --configuration phpunit.xml --verbose",
+    "coverage": "./vendor/bin/phpunit --configuration phpunit.xml --coverage-html ./coverage --verbose",
+    "test": [
+      "@phpunit"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}
