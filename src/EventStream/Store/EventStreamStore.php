@@ -26,7 +26,7 @@ interface EventStreamStore
      *
      * @param StoredAggregateEventStream $aggregateEventStream
      *
-     * @return Promise It does not return any result
+     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
@@ -40,7 +40,7 @@ interface EventStreamStore
      *
      * @param StoredAggregateEventStream $aggregateEventStream
      *
-     * @return Promise It does not return any result
+     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
@@ -88,7 +88,7 @@ interface EventStreamStore
      * @param int         $toVersion
      * @param bool        $force Delete all events after the specified version
      *
-     * @return Promise It does not return any result
+     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
