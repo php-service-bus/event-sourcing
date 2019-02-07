@@ -14,7 +14,6 @@ namespace ServiceBus\EventSourcing\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Exceptions\InvalidAggregateIdentifier;
-use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
 
 /**
