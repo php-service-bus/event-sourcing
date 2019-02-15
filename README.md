@@ -6,4 +6,4 @@
 
 Simple Event Sourcing implementation
 
-[@see Event Sourcing module](https://github.com/php-service-bus/module-event-sourcing)
+[@see Event Sourcing module](https://github.com/php-service-bus/documentation/blob/master/pages/modules/event_sourcing.md)
