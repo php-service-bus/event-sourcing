@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "68076d4a3cf8e598c8e11c24e9f33914",
-    "content-hash": "98519440d963a7e8ee50eea0a1ef2e6f",
+    "hash": "bff9a132e694f47db01c1aa7705bb542",
+    "content-hash": "ca1ae163ce911682eb711f1c6203c4e8",
     "packages": [
         {
             "name": "amphp/amp",
@@ -252,16 +252,16 @@
         },
         {
             "name": "php-service-bus/common",
-            "version": "v3.0.x-dev",
+            "version": "v3.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/common.git",
-                "reference": "d3b1b081a08e2656dcdb4ccb242b4e18abe74bdf"
+                "reference": "2290f2e66b7ea0718a7afccdbcc4d7928e001205"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/common/zipball/d3b1b081a08e2656dcdb4ccb242b4e18abe74bdf",
-                "reference": "d3b1b081a08e2656dcdb4ccb242b4e18abe74bdf",
+                "url": "https://api.github.com/repos/php-service-bus/common/zipball/2290f2e66b7ea0718a7afccdbcc4d7928e001205",
+                "reference": "2290f2e66b7ea0718a7afccdbcc4d7928e001205",
                 "shasum": ""
             },
             "require": {
@@ -301,26 +301,26 @@
                 "command-bus",
                 "messaging"
             ],
-            "time": "2019-02-26 07:22:23"
+            "time": "2019-02-26 13:01:39"
         },
         {
             "name": "php-service-bus/message-serializer",
-            "version": "v3.0.x-dev",
+            "version": "v3.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/message-serializer.git",
-                "reference": "c89c3d0b9322c05937cc849b2196372073226b52"
+                "reference": "c4cab83ef8ac2e79e65f8d95f10b36d7e182f94f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/message-serializer/zipball/c89c3d0b9322c05937cc849b2196372073226b52",
-                "reference": "c89c3d0b9322c05937cc849b2196372073226b52",
+                "url": "https://api.github.com/repos/php-service-bus/message-serializer/zipball/c4cab83ef8ac2e79e65f8d95f10b36d7e182f94f",
+                "reference": "c4cab83ef8ac2e79e65f8d95f10b36d7e182f94f",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "php": ">=7.2",
-                "php-service-bus/common": "v3.0.x-dev",
+                "php-service-bus/common": "v3.0.7",
                 "symfony/serializer-pack": "^v1"
             },
             "require-dev": {
@@ -352,20 +352,20 @@
                 "command-bus",
                 "messaging"
             ],
-            "time": "2019-02-26 07:28:46"
+            "time": "2019-02-26 13:10:37"
         },
         {
             "name": "php-service-bus/storage-common",
-            "version": "v3.0.x-dev",
+            "version": "v3.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/storage-common.git",
-                "reference": "fb8126e830023bcaf274b48334cf2690e0837003"
+                "reference": "1a2b6a8e1a17bbe2fddd64aa37dc29611069bc07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/storage-common/zipball/fb8126e830023bcaf274b48334cf2690e0837003",
-                "reference": "fb8126e830023bcaf274b48334cf2690e0837003",
+                "url": "https://api.github.com/repos/php-service-bus/storage-common/zipball/1a2b6a8e1a17bbe2fddd64aa37dc29611069bc07",
+                "reference": "1a2b6a8e1a17bbe2fddd64aa37dc29611069bc07",
                 "shasum": ""
             },
             "require": {
@@ -400,7 +400,7 @@
                 "command-bus",
                 "messaging"
             ],
-            "time": "2019-02-21 15:07:42"
+            "time": "2019-02-26 13:21:45"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -2176,16 +2176,16 @@
         },
         {
             "name": "php-service-bus/storage-sql",
-            "version": "v3.0.x-dev",
+            "version": "v3.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/storage-sql.git",
-                "reference": "7235ea9406988955f30ac406657412adf3af5e0c"
+                "reference": "fa2f5f0587fed0a91fdc82b3a740bb2511119854"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/storage-sql/zipball/7235ea9406988955f30ac406657412adf3af5e0c",
-                "reference": "7235ea9406988955f30ac406657412adf3af5e0c",
+                "url": "https://api.github.com/repos/php-service-bus/storage-sql/zipball/fa2f5f0587fed0a91fdc82b3a740bb2511119854",
+                "reference": "fa2f5f0587fed0a91fdc82b3a740bb2511119854",
                 "shasum": ""
             },
             "require": {
@@ -2193,7 +2193,7 @@
                 "ext-pgsql": "*",
                 "latitude/latitude": "^3.1",
                 "php": ">=7.2",
-                "php-service-bus/storage-common": "^v3.0",
+                "php-service-bus/storage-common": "v3.0.7",
                 "psr/log": "1.1.*"
             },
             "require-dev": {
@@ -2232,7 +2232,7 @@
                 "postgresql",
                 "sql"
             ],
-            "time": "2019-02-22 08:02:49"
+            "time": "2019-02-26 13:24:26"
         },
         {
             "name": "phpspec/prophecy",
@@ -3660,12 +3660,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "php-service-bus/common": 20,
-        "php-service-bus/storage-common": 20,
-        "php-service-bus/message-serializer": 20,
-        "php-service-bus/storage-sql": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
