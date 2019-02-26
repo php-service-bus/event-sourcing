@@ -12,8 +12,6 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\EventStream\Serializer;
 
-use ServiceBus\Common\Messages\Event;
-
 /**
  *
  */
@@ -22,25 +20,25 @@ interface EventSerializer
     /**
      * Serialize event object to string
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return string
      *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
      */
-    public function serialize(Event $event): string;
+    public function serialize(object $event): string;
 
     /**
      * Restore event object
      *
-     * @psalm-param class-string<\ServiceBus\Common\Messages\Event> $eventClass
+     * @psalm-param class-string $eventClass
      *
      * @param string $eventClass
      * @param string $payload
      *
-     * @return Event
+     * @return object
      *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
      */
-    public function unserialize(string $eventClass, string $payload): Event;
+    public function unserialize(string $eventClass, string $payload): object;
 }

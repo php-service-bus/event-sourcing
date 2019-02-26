@@ -109,7 +109,7 @@ final class EventStreamRepository
      *
      * @param Aggregate $aggregate
      *
-     * @return Promise<array<int, \ServiceBus\Common\Messages\Event>>
+     * @return Promise<array<int, object>>
      */
     public function save(Aggregate $aggregate): Promise
     {
@@ -117,7 +117,10 @@ final class EventStreamRepository
         return call(
             function(Aggregate $aggregate): \Generator
             {
-                /** @var array<int, \ServiceBus\Common\Messages\Event> $raisedEvents */
+                /**
+                 * @psalm-var array<int, object> $raisedEvents
+                 * @var object[] $raisedEvents
+                 */
                 $raisedEvents = yield from $this->doStore($aggregate, true);
 
                 return $raisedEvents;
@@ -133,7 +136,7 @@ final class EventStreamRepository
      *
      * @param Aggregate $aggregate
      *
-     * @return Promise<array<int, \ServiceBus\Common\Messages\Event>>
+     * @return Promise<array<int, object>>
      */
     public function update(Aggregate $aggregate): Promise
     {
@@ -141,7 +144,10 @@ final class EventStreamRepository
         return call(
             function(Aggregate $aggregate): \Generator
             {
-                /** @var array<int, \ServiceBus\Common\Messages\Event> $raisedEvents */
+                /**
+                 * @psalm-var array<int, object> $raisedEvents
+                 * @var object[] $raisedEvents
+                 */
                 $raisedEvents = yield from $this->doStore($aggregate, false);
 
                 return $raisedEvents;
@@ -154,7 +160,8 @@ final class EventStreamRepository
      * Revert aggregate to specified version
      *
      * Mode options:
-     *   - 1 (self::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may be version conflicts in some situations
+     *   - 1 (self::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may be version
+     *   conflicts in some situations
      *   - 2 (self::REVERT_MODE_DELETE): Removes tail events from the database (the best option)
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
@@ -197,8 +204,8 @@ final class EventStreamRepository
      *
      * @return \Generator
      *
-     * @throws \ServiceBus\Common\Exceptions\DateTime\InvalidDateTimeFormatSpecified
-     * @throws \ServiceBus\Common\Exceptions\Reflection\InvokeReflectionMethodFailed
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
@@ -239,10 +246,9 @@ final class EventStreamRepository
      *
      * @return Aggregate|null
      *
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
-     * @throws \ServiceBus\Common\Exceptions\DateTime\CreateDateTimeFailed
-     * @throws \ServiceBus\Common\Exceptions\Reflection\InvokeReflectionMethodFailed
-     * @throws \ServiceBus\Common\Exceptions\Reflection\ReflectionClassNotFound
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      */
     private function restoreStream(?Aggregate $aggregate, ?StoredAggregateEventStream $storedEventStream): ?Aggregate
     {

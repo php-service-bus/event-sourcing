@@ -27,7 +27,7 @@ use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
  *
  * @return AggregateEventStream
  *
- * @throws \ServiceBus\Common\Exceptions\DateTime\CreateDateTimeFailed
+ * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
  */
 function streamToDomainRepresentation(EventSerializer $serializer, StoredAggregateEventStream $storedAggregateEventsStream): AggregateEventStream
@@ -64,12 +64,12 @@ function streamToDomainRepresentation(EventSerializer $serializer, StoredAggrega
  *
  * @return StoredAggregateEvent
  *
- * @throws \ServiceBus\Common\Exceptions\DateTime\InvalidDateTimeFormatSpecified
+ * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
  */
 function eventToStoredRepresentation(EventSerializer $serializer, AggregateEvent $aggregateEvent): StoredAggregateEvent
 {
-    /** @var class-string<\ServiceBus\Common\Messages\Event>  $eventClass */
+    /** @psalm-var class-string $eventClass */
     $eventClass = \get_class($aggregateEvent->event);
 
     return StoredAggregateEvent::create(
@@ -89,7 +89,7 @@ function eventToStoredRepresentation(EventSerializer $serializer, AggregateEvent
  *
  * @return AggregateEvent
  *
- * @throws \ServiceBus\Common\Exceptions\DateTime\CreateDateTimeFailed
+ * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
  */
 function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregateEvent $storedAggregateEvent): AggregateEvent
@@ -118,7 +118,7 @@ function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregat
  *
  * @return StoredAggregateEventStream
  *
- * @throws \ServiceBus\Common\Exceptions\DateTime\InvalidDateTimeFormatSpecified
+ * @throws \ServiceBus\Common\Exceptions\DateTimeException
  */
 function streamToStoredRepresentation(EventSerializer $serializer, AggregateEventStream $aggregateEvent): StoredAggregateEventStream
 {

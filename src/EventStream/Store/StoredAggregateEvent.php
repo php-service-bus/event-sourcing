@@ -48,7 +48,7 @@ final class StoredAggregateEvent
     /**
      * Event class
      *
-     * @psalm-var class-string<\ServiceBus\Common\Messages\Event>
+     * @psalm-var class-string
      * @var string
      */
     public $eventClass;
@@ -68,7 +68,7 @@ final class StoredAggregateEvent
     public $recordedAt;
 
     /**
-     * @psalm-param class-string<\ServiceBus\Common\Messages\Event> $eventClass
+     * @psalm-param class-string $eventClass
      *
      * @param string $eventId
      * @param int    $playheadPosition
@@ -90,7 +90,7 @@ final class StoredAggregateEvent
     }
 
     /**
-     * @psalm-param class-string<\ServiceBus\Common\Messages\Event> $eventClass
+     * @psalm-param class-string $eventClass
      *
      * @param string $eventId
      * @param int    $playheadPosition
@@ -114,7 +114,7 @@ final class StoredAggregateEvent
     }
 
     /**
-     * @psalm-param class-string<\ServiceBus\Common\Messages\Event> $eventClass
+     * @psalm-param class-string $eventClass
      *
      * @param string      $eventId
      * @param int         $playheadPosition

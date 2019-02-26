@@ -13,7 +13,6 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing;
 
 use function ServiceBus\Common\datetimeInstantiator;
-use ServiceBus\Common\Messages\Event;
 use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
@@ -53,7 +52,8 @@ abstract class Aggregate
     /**
      * List of applied aggregate events
      *
-     * @var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
     private $events;
 
@@ -111,13 +111,13 @@ abstract class Aggregate
     /**
      * Raise (apply event)
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return void
      *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
      */
-    final protected function raise(Event $event): void
+    final protected function raise(object $event): void
     {
         if(null !== $this->closedAt)
         {
@@ -196,7 +196,6 @@ abstract class Aggregate
      */
     private function makeStream(): AggregateEventStream
     {
-        /** @var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events */
         $events = $this->events;
 
         /** @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass */
@@ -245,11 +244,11 @@ abstract class Aggregate
      *
      * Attach event to stream
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return void
      */
-    private function attachEvent(Event $event): void
+    private function attachEvent(object $event): void
     {
         $this->increaseVersion(self::INCREASE_VERSION_STEP);
 
@@ -265,11 +264,11 @@ abstract class Aggregate
     /**
      * Apply event
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return void
      */
-    private function applyEvent(Event $event): void
+    private function applyEvent(object $event): void
     {
         $eventListenerMethodName = self::createListenerName($event);
 
@@ -281,42 +280,42 @@ abstract class Aggregate
     /**
      * Is internal event (for current class)
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return bool
      */
-    private static function isInternalEvent(Event $event): bool
+    private static function isInternalEvent(object $event): bool
     {
         return true === \in_array(\get_class($event), self::INTERNAL_EVENTS, true);
     }
 
     /**
      * @param string $listenerName
-     * @param Event  $event
+     * @param object  $event
      *
      * @return void
      */
-    private function processInternalEvent(string $listenerName, Event $event): void
+    private function processInternalEvent(string $listenerName, object $event): void
     {
         $this->{$listenerName}($event);
     }
 
     /**
      * @param string $listenerName
-     * @param Event  $event
+     * @param object  $event
      *
      * @return void
      */
-    private function processChildEvent(string $listenerName, Event $event): void
+    private function processChildEvent(string $listenerName, object $event): void
     {
         /**
          * Call child class method
          *
-         * @param Event $event
+         * @param object $event
          *
          * @return void
          */
-        $closure = function(Event $event) use ($listenerName): void
+        $closure = function(object $event) use ($listenerName): void
         {
             if(true === \method_exists($this, $listenerName))
             {
@@ -330,11 +329,11 @@ abstract class Aggregate
     /**
      * Create event listener name
      *
-     * @param Event $event
+     * @param object $event
      *
      * @return string
      */
-    private static function createListenerName(Event $event): string
+    private static function createListenerName(object $event): string
     {
         $eventListenerMethodNameParts = \explode('\\', \get_class($event));
 

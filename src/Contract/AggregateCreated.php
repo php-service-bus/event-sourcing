@@ -13,7 +13,6 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Contract;
 
 use function ServiceBus\Common\datetimeInstantiator;
-use ServiceBus\Common\Messages\Event;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
@@ -24,7 +23,7 @@ use ServiceBus\EventSourcing\AggregateId;
  * @property-read string             $aggregateClass
  * @property-read \DateTimeImmutable $datetime
  */
-final class AggregateCreated implements Event
+final class AggregateCreated
 {
     /**
      * Aggregate identifier
@@ -36,6 +35,7 @@ final class AggregateCreated implements Event
     /**
      * Aggregate identifier class
      *
+     * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
      * @var string
      */
     public $idClass;
@@ -43,6 +43,7 @@ final class AggregateCreated implements Event
     /**
      * Aggregate class
      *
+     * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
      * @var string
      */
     public $aggregateClass;

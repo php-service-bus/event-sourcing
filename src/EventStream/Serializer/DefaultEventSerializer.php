@@ -12,7 +12,6 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\EventStream\Serializer;
 
-use ServiceBus\Common\Messages\Event;
 use ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed;
 use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
 
@@ -35,7 +34,7 @@ final class DefaultEventSerializer implements EventSerializer
     /**
      * @inheritDoc
      */
-    public function serialize(Event $event): string
+    public function serialize(object $event): string
     {
         try
         {
@@ -43,29 +42,22 @@ final class DefaultEventSerializer implements EventSerializer
         }
         catch(\Throwable $throwable)
         {
-            throw new SerializeEventFailed($throwable->getMessage(), (int) $throwable->getCode(), $throwable);
+            throw SerializeEventFailed::fromThrowable($throwable);
         }
     }
 
     /**
      * @inheritDoc
      */
-    public function unserialize(string $eventClass, string $payload): Event
+    public function unserialize(string $eventClass, string $payload): object
     {
         try
         {
-            $event = $this->serializer->decode($payload);
-
-            if($event instanceof Event)
-            {
-                return $event;
-            }
-
-            throw new \InvalidArgumentException('The string must be a serialized representation of the event');
+            return $this->serializer->decode($payload);
         }
         catch(\Throwable $throwable)
         {
-            throw new SerializeEventFailed($throwable->getMessage(), (int) $throwable->getCode(), $throwable);
+            throw SerializeEventFailed::fromThrowable($throwable);
         }
     }
 }

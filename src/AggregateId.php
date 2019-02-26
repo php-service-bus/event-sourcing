@@ -47,7 +47,7 @@ abstract class AggregateId
     {
         if('' === $id)
         {
-            throw new InvalidAggregateIdentifier('The aggregate identifier can\'t be empty');
+            throw InvalidAggregateIdentifier::emptyId();
         }
 
         $this->id = $id;

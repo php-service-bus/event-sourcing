@@ -17,5 +17,11 @@ namespace ServiceBus\EventSourcing\Exceptions;
  */
 final class InvalidAggregateIdentifier extends \RuntimeException
 {
-
+    /**
+     * @return self
+     */
+    public static function emptyId(): self
+    {
+        return new self('The aggregate identifier can\'t be empty');
+    }
 }

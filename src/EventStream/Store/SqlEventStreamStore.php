@@ -201,9 +201,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 if(null === $streamData)
                 {
-                    throw new EventStreamDoesNotExist(
-                        \sprintf('Event stream with identifier "%s" doesn\'t exist', $id)
-                    );
+                    throw EventStreamDoesNotExist::create($id);
                 }
 
                 /** @var string $streamId */
@@ -272,7 +270,6 @@ final class SqlEventStreamStore implements EventStreamStore
             'created_at'       => $eventsStream->createdAt,
             'closed_at'        => $eventsStream->closedAt
         ]);
-
 
         $compiledQuery = $insertQuery->compile();
 
@@ -344,7 +341,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
-         * @var array<string, string>|null $data
+         * @psalm-var      array<string, string>|null $data
+         * @var array $data
          */
         $data = /** @noinspection PhpUnhandledExceptionInspection */
             yield fetchOne($resultSet);
@@ -395,7 +393,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
-         * @var array<int, array>|null $result
+         * @psalm-var      array<int, array>|null $result
+         * @var array $result
          */
         $result = yield fetchAll($resultSet);
 
@@ -505,9 +504,12 @@ final class SqlEventStreamStore implements EventStreamStore
     /**
      * Transform events stream array data to stored representation
      *
-     * @param DatabaseAdapter        $adapter
-     * @param array<string, string>  $streamData
-     * @param array<int, array>|null $streamEventsData
+     * @psalm-param array<string, string>  $streamData
+     * @psalm-param array<int, array>|null $streamEventsData
+     *
+     * @param DatabaseAdapter $adapter
+     * @param array           $streamData
+     * @param array           $streamEventsData
      *
      * @return StoredAggregateEventStream
      *
@@ -519,7 +521,7 @@ final class SqlEventStreamStore implements EventStreamStore
         ?array $streamEventsData
     ): StoredAggregateEventStream
     {
-        /** @var array{
+        /** @psalm-var array{
          *     id:string,
          *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
          *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
@@ -541,10 +543,12 @@ final class SqlEventStreamStore implements EventStreamStore
     /**
      * Restore events from rows
      *
+     * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
+     *
      * @param BinaryDataDecoder $decoder
      * @param array|null        $eventsData
      *
-     * @return array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
+     * @return \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
      *
      * @throws \LogicException
      */
@@ -555,11 +559,11 @@ final class SqlEventStreamStore implements EventStreamStore
         if(true === \is_array($eventsData) && 0 !== \count($eventsData))
         {
             /**
-             * @var array{
+             * @psalm-var array{
              *   id:string,
              *   playhead:string,
              *   payload:string,
-             *   event_class:class-string<\ServiceBus\Common\Messages\Event>,
+             *   event_class:class-string,
              *   occured_at:string,
              *   recorded_at:string
              * } $eventRow
@@ -626,7 +630,7 @@ final class SqlEventStreamStore implements EventStreamStore
         $queryParameters = [];
         $rowSetIndex     = 0;
 
-        /** @var array<int, string|int> $parameters */
+        /** @psalm-var array<int, string|int> $parameters */
         foreach(self::prepareEventRows($eventsStream) as $parameters)
         {
             foreach($parameters as $parameter)
@@ -643,9 +647,11 @@ final class SqlEventStreamStore implements EventStreamStore
     /**
      * Prepare events to insert
      *
+     * @psalm-return array<int, array<int, string|int>>
+     *
      * @param StoredAggregateEventStream $eventsStream
      *
-     * @return array<int, array<int, string|int>>
+     * @return array
      */
     private static function prepareEventRows(StoredAggregateEventStream $eventsStream): array
     {

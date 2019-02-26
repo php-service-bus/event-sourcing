@@ -12,14 +12,12 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
-use ServiceBus\Common\Messages\Event;
-
 /**
  * Applied to aggregate event
  *
  * @property-read string                  $id
  * @property-read int                     $playhead
- * @property-read Event                   $event
+ * @property-read object                  $event
  * @property-read \DateTimeImmutable      $occuredAt
  * @property-read \DateTimeImmutable|null $recordedAt
  */
@@ -42,7 +40,7 @@ final class AggregateEvent
     /**
      * Received event
      *
-     * @var Event
+     * @var object
      */
     public $event;
 
@@ -62,41 +60,41 @@ final class AggregateEvent
 
     /**
      * @param string             $id
-     * @param Event              $event
+     * @param object             $event
      * @param int                $playhead
      * @param \DateTimeImmutable $occuredAt
      *
      * @return self
      */
-    public static function create(string $id, Event $event, int $playhead, \DateTimeImmutable $occuredAt): self
+    public static function create(string $id, object $event, int $playhead, \DateTimeImmutable $occuredAt): self
     {
         return new self($id, $event, $playhead, $occuredAt, null);
     }
 
     /**
      * @param string             $id
-     * @param Event              $event
+     * @param object             $event
      * @param int                $playhead
      * @param \DateTimeImmutable $occuredAt
      * @param \DateTimeImmutable $recordedAt
      *
      * @return self
      */
-    public static function restore(string $id, Event $event, int $playhead, \DateTimeImmutable $occuredAt, \DateTimeImmutable $recordedAt): self
+    public static function restore(string $id, object $event, int $playhead, \DateTimeImmutable $occuredAt, \DateTimeImmutable $recordedAt): self
     {
         return new self($id, $event, $playhead, $occuredAt, $recordedAt);
     }
 
     /**
      * @param string                  $id
-     * @param Event                   $event
+     * @param object                  $event
      * @param int                     $playhead
      * @param \DateTimeImmutable      $occuredAt
      * @param \DateTimeImmutable|null $recordedAt
      */
     private function __construct(
         string $id,
-        Event $event,
+        object $event,
         int $playhead,
         \DateTimeImmutable $occuredAt,
         ?\DateTimeImmutable $recordedAt = null

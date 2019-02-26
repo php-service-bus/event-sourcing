@@ -12,7 +12,6 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
-use ServiceBus\Common\Messages\Event;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
@@ -21,7 +20,7 @@ use ServiceBus\EventSourcing\AggregateId;
  * @property-read AggregateId                                                      $id
  * @property-read string                                                           $aggregateClass
  * @property-read array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
- * @property-read array<int, \ServiceBus\Common\Messages\Event>                    $originEvents
+ * @property-read array<int, object>                                               $originEvents
  * @property-read \DateTimeImmutable                                               $createdAt
  * @property-read \DateTimeImmutable|null                                          $closedAt
  */
@@ -52,7 +51,7 @@ final class AggregateEventStream
     /**
      * Origin event collection
      *
-     * @var array<int, \ServiceBus\Common\Messages\Event>
+     * @var array<int, object>
      */
     public $originEvents;
 
@@ -139,14 +138,17 @@ final class AggregateEventStream
     }
 
     /**
-     * @param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-return array<int, object>
      *
-     * @return array<int, \ServiceBus\Common\Messages\Event>
+     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[] $events
+     *
+     * @return object[]
      */
     private static function extractOriginEvents(array $events): array
     {
         return \array_map(
-            static function(AggregateEvent $event): Event
+            static function(AggregateEvent $event): object
             {
                 return $event->event;
             },

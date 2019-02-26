@@ -13,10 +13,8 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Tests\EventStream\Serializer;
 
 use PHPUnit\Framework\TestCase;
-use ServiceBus\Common\Messages\Command;
 use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed;
-use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
 
 /**
  *
@@ -33,15 +31,10 @@ final class DefaultEventSerializerTest extends TestCase
     public function unserializeWrongMessageType(): void
     {
         $this->expectException(SerializeEventFailed::class);
-        $this->expectExceptionMessage('The string must be a serialized representation of the event');
+        $this->expectExceptionMessage('JSON unserialize failed: Syntax error');
 
         $serializer = new DefaultEventSerializer();
 
-        $command = new class implements Command
-        {
-
-        };
-
-        $serializer->unserialize('', (new SymfonyMessageSerializer())->encode($command));
+        $serializer->unserialize('', 'qwerty');
     }
 }
