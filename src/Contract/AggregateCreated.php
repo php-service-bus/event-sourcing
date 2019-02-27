@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -16,7 +16,7 @@ use function ServiceBus\Common\datetimeInstantiator;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
- * New aggregate created
+ * New aggregate created.
  *
  * @property-read string             $id
  * @property-read string             $idClass
@@ -26,30 +26,32 @@ use ServiceBus\EventSourcing\AggregateId;
 final class AggregateCreated
 {
     /**
-     * Aggregate identifier
+     * Aggregate identifier.
      *
      * @var string
      */
     public $id;
 
     /**
-     * Aggregate identifier class
+     * Aggregate identifier class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
+     *
      * @var string
      */
     public $idClass;
 
     /**
-     * Aggregate class
+     * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
      * @var string
      */
     public $aggregateClass;
 
     /**
-     * Operation datetime
+     * Operation datetime.
      *
      * @var \DateTimeImmutable
      */
@@ -91,6 +93,7 @@ final class AggregateCreated
 
         /**
          * @noinspection PhpUnhandledExceptionInspection
+         *
          * @var \DateTimeImmutable
          */
         $currentDate = datetimeInstantiator('NOW');

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -16,7 +16,7 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty;
 use ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty;
 
 /**
- * The key for the value stored in the index
+ * The key for the value stored in the index.
  *
  * @property-read string $indexName
  * @property-read string $valueKey
@@ -37,10 +37,10 @@ final class IndexKey
      * @param string $indexName
      * @param string $valueKey
      *
-     * @return self
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty
+     *
+     * @return self
      */
     public static function create(string $indexName, string $valueKey): self
     {
@@ -53,13 +53,14 @@ final class IndexKey
     /**
      * @param string $indexName
      *
+     * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty
+     *
      * @return void
      *
-     * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty
      */
     private static function assertIndexNameIsNotEmpty(string $indexName): void
     {
-        if('' === $indexName)
+        if ('' === $indexName)
         {
             throw new IndexNameCantBeEmpty('Index name can\'t be empty');
         }
@@ -68,13 +69,13 @@ final class IndexKey
     /**
      * @param string $valueKey
      *
-     * @return void
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty
+     *
+     * @return void
      */
     private static function assertValueKeyIsNotEmpty(string $valueKey): void
     {
-        if('' === $valueKey)
+        if ('' === $valueKey)
         {
             throw new ValueKeyCantBeEmpty('Value key can\'t be empty');
         }

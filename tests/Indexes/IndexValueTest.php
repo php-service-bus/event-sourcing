@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -25,9 +25,9 @@ final class IndexValueTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function createWithWrongType(): void
     {
@@ -37,7 +37,6 @@ final class IndexValueTest extends TestCase
         IndexValue::create(
             static function(): void
             {
-
             }
         );
     }
@@ -45,9 +44,9 @@ final class IndexValueTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function createWithEmptyValue(): void
     {
@@ -60,9 +59,9 @@ final class IndexValueTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function successCreate(): void
     {

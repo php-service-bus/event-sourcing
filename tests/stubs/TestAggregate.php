@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -32,9 +32,10 @@ final class TestAggregate extends Aggregate
     /**
      * @param string $value
      *
+     * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
+     *
      * @return void
      *
-     * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
      */
     public function firstAction(string $value): void
     {
@@ -44,9 +45,10 @@ final class TestAggregate extends Aggregate
     /**
      * @param string $value
      *
+     * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
+     *
      * @return void
      *
-     * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
      */
     public function secondAction(string $value): void
     {

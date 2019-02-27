@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,7 +13,7 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\EventStream;
 
 /**
- * Applied to aggregate event
+ * Applied to aggregate event.
  *
  * @property-read string                  $id
  * @property-read int                     $playhead
@@ -24,35 +24,35 @@ namespace ServiceBus\EventSourcing\EventStream;
 final class AggregateEvent
 {
     /**
-     * Event id
+     * Event id.
      *
      * @var string
      */
     public $id;
 
     /**
-     * Playhead position
+     * Playhead position.
      *
      * @var int
      */
     public $playhead;
 
     /**
-     * Received event
+     * Received event.
      *
      * @var object
      */
     public $event;
 
     /**
-     * Occurred datetime
+     * Occurred datetime.
      *
      * @var \DateTimeImmutable
      */
     public $occuredAt;
 
     /**
-     * Recorded datetime
+     * Recorded datetime.
      *
      * @var \DateTimeImmutable|null
      */
@@ -98,8 +98,7 @@ final class AggregateEvent
         int $playhead,
         \DateTimeImmutable $occuredAt,
         ?\DateTimeImmutable $recordedAt = null
-    )
-    {
+    ) {
         $this->id         = $id;
         $this->event      = $event;
         $this->playhead   = $playhead;

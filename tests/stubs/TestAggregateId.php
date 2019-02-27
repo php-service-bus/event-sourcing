@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -19,5 +19,4 @@ use ServiceBus\EventSourcing\AggregateId;
  */
 final class TestAggregateId extends AggregateId
 {
-
 }

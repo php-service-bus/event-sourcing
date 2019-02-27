@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -25,14 +25,13 @@ final class DefaultEventSerializer implements EventSerializer
      */
     private $serializer;
 
-
     public function __construct()
     {
         $this->serializer = new SymfonyMessageSerializer();
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function serialize(object $event): string
     {
@@ -40,14 +39,14 @@ final class DefaultEventSerializer implements EventSerializer
         {
             return $this->serializer->encode($event);
         }
-        catch(\Throwable $throwable)
+        catch (\Throwable $throwable)
         {
             throw SerializeEventFailed::fromThrowable($throwable);
         }
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function unserialize(string $eventClass, string $payload): object
     {
@@ -55,7 +54,7 @@ final class DefaultEventSerializer implements EventSerializer
         {
             return $this->serializer->decode($payload);
         }
-        catch(\Throwable $throwable)
+        catch (\Throwable $throwable)
         {
             throw SerializeEventFailed::fromThrowable($throwable);
         }

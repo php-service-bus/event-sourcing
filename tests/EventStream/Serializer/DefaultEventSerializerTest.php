@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -24,9 +24,9 @@ final class DefaultEventSerializerTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function unserializeWrongMessageType(): void
     {

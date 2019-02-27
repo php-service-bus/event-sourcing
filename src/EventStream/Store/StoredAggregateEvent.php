@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,7 +13,7 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
 /**
- * Aggregate event data
+ * Aggregate event data.
  *
  * @property-read string      $eventId
  * @property-read int         $playheadPosition
@@ -25,43 +25,44 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 final class StoredAggregateEvent
 {
     /**
-     * Event ID
+     * Event ID.
      *
      * @var string
      */
     public $eventId;
 
     /**
-     * Playhead position
+     * Playhead position.
      *
      * @var int
      */
     public $playheadPosition;
 
     /**
-     * Serialized event data
+     * Serialized event data.
      *
      * @var string
      */
     public $eventData;
 
     /**
-     * Event class
+     * Event class.
      *
      * @psalm-var class-string
+     *
      * @var string
      */
     public $eventClass;
 
     /**
-     * Occured at datetime
+     * Occured at datetime.
      *
      * @var string
      */
     public $occuredAt;
 
     /**
-     * Recorded at datetime
+     * Recorded at datetime.
      *
      * @var string|null
      */
@@ -84,8 +85,7 @@ final class StoredAggregateEvent
         string $eventData,
         string $eventClass,
         string $occuredAt
-    ): self
-    {
+    ): self {
         return new self($eventId, $playheadPosition, $eventData, $eventClass, $occuredAt);
     }
 
@@ -108,8 +108,7 @@ final class StoredAggregateEvent
         string $eventClass,
         string $occuredAt,
         string $recordedAt
-    ): self
-    {
+    ): self {
         return new self($eventId, $playheadPosition, $eventData, $eventClass, $occuredAt, $recordedAt);
     }
 
@@ -121,7 +120,7 @@ final class StoredAggregateEvent
      * @param string      $eventData
      * @param string      $eventClass
      * @param string      $occuredAt
-     * @param null|string $recordedAt
+     * @param string|null $recordedAt
      */
     private function __construct(
         string $eventId,
@@ -130,8 +129,7 @@ final class StoredAggregateEvent
         string $eventClass,
         string $occuredAt,
         ?string $recordedAt = null
-    )
-    {
+    ) {
         $this->eventId          = $eventId;
         $this->playheadPosition = $playheadPosition;
         $this->eventData        = $eventData;

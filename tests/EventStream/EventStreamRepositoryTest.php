@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,8 +13,9 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Tests\EventStream;
 
 use function Amp\Promise\wait;
-use PHPUnit\Framework\TestCase;
 use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\Storage\Sql\fetchOne;
+use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
@@ -32,7 +33,6 @@ use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
-use function ServiceBus\Storage\Sql\fetchOne;
 
 /**
  *
@@ -65,7 +65,7 @@ final class EventStreamRepositoryTest extends TestCase
     private $eventStreamRepository;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -77,20 +77,20 @@ final class EventStreamRepositoryTest extends TestCase
             new StorageConfiguration((string) \getenv('TEST_POSTGRES_DSN'))
         );
 
-        $queries = \array_map('trim', \array_merge([
-            \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/event_store_stream.sql'),
-            \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/event_store_stream_events.sql'),
-            \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/extensions.sql'),
-            \file_get_contents(__DIR__ . '/../../src/Snapshots/Store/schema/event_store_snapshots.sql')
-        ],
+        $queries = \array_map('trim', \array_merge(
+            [
+                \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/event_store_stream.sql'),
+                \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/event_store_stream_events.sql'),
+                \file_get_contents(__DIR__ . '/../../src/EventStream/Store/schema/extensions.sql'),
+                \file_get_contents(__DIR__ . '/../../src/Snapshots/Store/schema/event_store_snapshots.sql'),
+            ],
             \file(__DIR__ . '/../../src/EventStream/Store/schema/indexes.sql'),
             \file(__DIR__ . '/../../src/Snapshots/Store/schema/indexes.sql')
-
         ));
 
-        foreach($queries as $query)
+        foreach ($queries as $query)
         {
-            if('' !== $query)
+            if ('' !== $query)
             {
                 wait(self::$adapter->execute($query));
             }
@@ -98,7 +98,7 @@ final class EventStreamRepositoryTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -114,7 +114,7 @@ final class EventStreamRepositoryTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -129,7 +129,7 @@ final class EventStreamRepositoryTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -147,9 +147,9 @@ final class EventStreamRepositoryTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function flow(): void
     {
@@ -170,8 +170,7 @@ final class EventStreamRepositoryTest extends TestCase
         static::assertInstanceOf(Aggregate::class, $loadedAggregate);
 
         /** @var Aggregate $loadedAggregate */
-
-        static::assertEquals(1, $loadedAggregate->version());
+        static::assertSame(1, $loadedAggregate->version());
 
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $stream */
         $stream = invokeReflectionMethod($loadedAggregate, 'makeStream');
@@ -186,9 +185,9 @@ final class EventStreamRepositoryTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function loadWithSnapshot(): void
     {
@@ -216,16 +215,16 @@ final class EventStreamRepositoryTest extends TestCase
         static::assertNotNull($aggregate->firstValue());
         static::assertNotNull($aggregate->secondValue());
 
-        static::assertEquals('qwerty', $aggregate->firstValue());
-        static::assertEquals('root', $aggregate->secondValue());
+        static::assertSame('qwerty', $aggregate->firstValue());
+        static::assertSame('root', $aggregate->secondValue());
     }
 
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function saveDuplicateAggregate(): void
     {
@@ -240,9 +239,9 @@ final class EventStreamRepositoryTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function loadWithoutSnapshot(): void
     {
@@ -271,9 +270,9 @@ final class EventStreamRepositoryTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function successSoftDeleteRevert(): void
     {
@@ -281,7 +280,7 @@ final class EventStreamRepositoryTest extends TestCase
 
         wait($this->eventStreamRepository->save($aggregate));
 
-        foreach(\range(1, 6) as $item)
+        foreach (\range(1, 6) as $item)
         {
             $aggregate->firstAction($item + 1 . ' event');
         }
@@ -290,20 +289,22 @@ final class EventStreamRepositoryTest extends TestCase
         wait($this->eventStreamRepository->update($aggregate));
 
         /** 7 aggregate version */
-        static::assertEquals(7, $aggregate->version());
-        static::assertEquals('7 event', $aggregate->firstValue());
+        static::assertSame(7, $aggregate->version());
+        static::assertSame('7 event', $aggregate->firstValue());
 
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate, 5, EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                $aggregate,
+                5,
+                EventStreamRepository::REVERT_MODE_SOFT_DELETE
             )
         );
 
-        static::assertEquals(5, $aggregate->version());
-        static::assertEquals('5 event', $aggregate->firstValue());
+        static::assertSame(5, $aggregate->version());
+        static::assertSame('5 event', $aggregate->firstValue());
 
-        foreach(\range(1, 6) as $item)
+        foreach (\range(1, 6) as $item)
         {
             $aggregate->firstAction($item + 5 . ' new event');
         }
@@ -311,16 +312,16 @@ final class EventStreamRepositoryTest extends TestCase
         /** 7 aggregate version */
         wait($this->eventStreamRepository->update($aggregate));
 
-        static::assertEquals(11, $aggregate->version());
-        static::assertEquals('11 new event', $aggregate->firstValue());
+        static::assertSame(11, $aggregate->version());
+        static::assertSame('11 new event', $aggregate->firstValue());
     }
 
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function successHardDeleteRevert(): void
     {
@@ -328,7 +329,7 @@ final class EventStreamRepositoryTest extends TestCase
 
         wait($this->eventStreamRepository->save($aggregate));
 
-        foreach(\range(1, 6) as $item)
+        foreach (\range(1, 6) as $item)
         {
             $aggregate->firstAction($item + 1 . ' event');
         }
@@ -337,19 +338,21 @@ final class EventStreamRepositoryTest extends TestCase
         wait($this->eventStreamRepository->update($aggregate));
 
         /** 7 aggregate version */
-        static::assertEquals(7, $aggregate->version());
-        static::assertEquals('7 event', $aggregate->firstValue());
+        static::assertSame(7, $aggregate->version());
+        static::assertSame('7 event', $aggregate->firstValue());
 
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate, 5, EventStreamRepository::REVERT_MODE_DELETE
+                $aggregate,
+                5,
+                EventStreamRepository::REVERT_MODE_DELETE
             )
         );
 
         /** 7 aggregate version */
-        static::assertEquals(5, $aggregate->version());
-        static::assertEquals('5 event', $aggregate->firstValue());
+        static::assertSame(5, $aggregate->version());
+        static::assertSame('5 event', $aggregate->firstValue());
 
         $eventsCount = wait(
             fetchOne(
@@ -357,15 +360,15 @@ final class EventStreamRepositoryTest extends TestCase
             )
         );
 
-        static::assertEquals(5, $eventsCount['cnt']);
+        static::assertSame(5, $eventsCount['cnt']);
     }
 
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function revertUnknownStream(): void
     {
@@ -377,9 +380,9 @@ final class EventStreamRepositoryTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function revertWithVersionConflict(): void
     {
@@ -396,7 +399,10 @@ final class EventStreamRepositoryTest extends TestCase
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate, 2, EventStreamRepository::REVERT_MODE_SOFT_DELETE)
+                $aggregate,
+                2,
+                EventStreamRepository::REVERT_MODE_SOFT_DELETE
+            )
         );
 
         $aggregate->firstAction('abube');
@@ -404,7 +410,9 @@ final class EventStreamRepositoryTest extends TestCase
         wait($this->eventStreamRepository->update($aggregate));
         wait(
             $this->eventStreamRepository->revert(
-                $aggregate, 3, EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                $aggregate,
+                3,
+                EventStreamRepository::REVERT_MODE_SOFT_DELETE
             )
         );
     }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -22,45 +22,45 @@ use ServiceBus\EventSourcing\AggregateId;
 interface EventStreamStore
 {
     /**
-     * Save new event stream
+     * Save new event stream.
      *
      * @param StoredAggregateEventStream $aggregateEventStream
-     *
-     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return Promise It doesn't return any result
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise;
 
     /**
-     * Append events to exists stream
+     * Append events to exists stream.
      *
      * @param StoredAggregateEventStream $aggregateEventStream
-     *
-     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise It doesn't return any result
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise;
 
     /**
-     * Load event stream
+     * Load event stream.
      *
      * @param AggregateId $id
      * @param int         $fromVersion
      * @param int|null    $toVersion
      *
-     * @return Promise<\ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null>
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\ResultSetIterationFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<\ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null>
      */
     public function load(
         AggregateId $id,
@@ -69,32 +69,32 @@ interface EventStreamStore
     ): Promise;
 
     /**
-     * Marks stream closed
+     * Marks stream closed.
      *
      * @param AggregateId $id
-     *
-     * @return Promise It does not return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise It does not return any result
      */
     public function close(AggregateId $id): Promise;
 
     /**
-     * Roll back all changes to specified version
+     * Roll back all changes to specified version.
      *
      * @param AggregateId $id
      * @param int         $toVersion
      * @param bool        $force Delete all events after the specified version
-     *
-     * @return Promise It doesn't return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist
      * @throws \ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed
+     *
+     * @return Promise It doesn't return any result
      */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise;
 }

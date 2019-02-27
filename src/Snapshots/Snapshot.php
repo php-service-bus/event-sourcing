@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -21,14 +21,14 @@ use ServiceBus\EventSourcing\Aggregate;
 final class Snapshot
 {
     /**
-     * Aggregate
+     * Aggregate.
      *
      * @var Aggregate
      */
     public $aggregate;
 
     /**
-     * Aggregate version
+     * Aggregate version.
      *
      * @var int
      */

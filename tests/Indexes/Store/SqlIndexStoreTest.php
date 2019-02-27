@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -38,7 +38,7 @@ final class SqlIndexStoreTest extends TestCase
     private $indexStore;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -58,7 +58,7 @@ final class SqlIndexStoreTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -72,7 +72,7 @@ final class SqlIndexStoreTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -84,7 +84,7 @@ final class SqlIndexStoreTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @throws \Throwable
      */
@@ -98,9 +98,9 @@ final class SqlIndexStoreTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function save(): void
     {
@@ -116,15 +116,15 @@ final class SqlIndexStoreTest extends TestCase
         $storedValue = wait($this->indexStore->find($index));
 
         static::assertNotNull($storedValue);
-        static::assertEquals($value->value, $storedValue->value);
+        static::assertSame($value->value, $storedValue->value);
     }
 
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function saveDuplicate(): void
     {
@@ -140,9 +140,9 @@ final class SqlIndexStoreTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function update(): void
     {
@@ -159,15 +159,15 @@ final class SqlIndexStoreTest extends TestCase
         $storedValue = wait($this->indexStore->find($index));
 
         static::assertNotNull($storedValue);
-        static::assertEquals($newValue->value, $storedValue->value);
+        static::assertSame($newValue->value, $storedValue->value);
     }
 
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function remove(): void
     {

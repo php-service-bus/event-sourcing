@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -17,5 +17,4 @@ namespace ServiceBus\EventSourcing\Indexes\Exceptions;
  */
 final class ValueKeyCantBeEmpty extends \InvalidArgumentException
 {
-
 }

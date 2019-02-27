@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -21,51 +21,53 @@ use ServiceBus\EventSourcing\EventStream\AggregateEventStream;
 use ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream;
 
 /**
- * Aggregate base class
+ * Aggregate base class.
  */
 abstract class Aggregate
 {
     public const   START_PLAYHEAD_INDEX = 0;
+
     private const  EVENT_APPLY_PREFIX   = 'on';
 
     private const INTERNAL_EVENTS = [
         AggregateCreated::class,
-        AggregateClosed::class
+        AggregateClosed::class,
     ];
 
     private const INCREASE_VERSION_STEP = 1;
 
     /**
-     * Aggregate identifier
+     * Aggregate identifier.
      *
      * @var AggregateId
      */
     private $id;
 
     /**
-     * Current version
+     * Current version.
      *
      * @var int
      */
     private $version = self::START_PLAYHEAD_INDEX;
 
     /**
-     * List of applied aggregate events
+     * List of applied aggregate events.
      *
      * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
     private $events;
 
     /**
-     * Created at datetime
+     * Created at datetime.
      *
      * @var \DateTimeImmutable
      */
     private $createdAt;
 
     /**
-     * Closed at datetime
+     * Closed at datetime.
      *
      * @var \DateTimeImmutable|null
      */
@@ -89,7 +91,7 @@ abstract class Aggregate
     }
 
     /**
-     * Receive id
+     * Receive id.
      *
      * @return AggregateId
      */
@@ -99,7 +101,7 @@ abstract class Aggregate
     }
 
     /**
-     * Receive created at datetime
+     * Receive created at datetime.
      *
      * @return \DateTimeImmutable
      */
@@ -109,17 +111,17 @@ abstract class Aggregate
     }
 
     /**
-     * Raise (apply event)
+     * Raise (apply event).
      *
      * @param object $event
      *
-     * @return void
-     *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
+     *
+     * @return void
      */
     final protected function raise(object $event): void
     {
-        if(null !== $this->closedAt)
+        if (null !== $this->closedAt)
         {
             throw new AttemptToChangeClosedStream($this->id);
         }
@@ -131,7 +133,7 @@ abstract class Aggregate
     }
 
     /**
-     * Receive aggregate version
+     * Receive aggregate version.
      *
      * @return int
      */
@@ -141,11 +143,11 @@ abstract class Aggregate
     }
 
     /**
-     * Close aggregate (make it read-only)
-     *
-     * @return void
+     * Close aggregate (make it read-only).
      *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
+     *
+     * @return void
      */
     final protected function close(): void
     {
@@ -153,12 +155,12 @@ abstract class Aggregate
         $aggregateClass = \get_class($this);
 
         $this->raise(
-            AggregateClosed::create($this->id,  $aggregateClass)
+            AggregateClosed::create($this->id, $aggregateClass)
         );
     }
 
     /**
-     * On aggregate closed
+     * On aggregate closed.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
      *
@@ -172,7 +174,7 @@ abstract class Aggregate
     }
 
     /**
-     * On aggregate created
+     * On aggregate created.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
      *
@@ -186,7 +188,7 @@ abstract class Aggregate
     }
 
     /**
-     * Receive uncommitted events as stream
+     * Receive uncommitted events as stream.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
      *
@@ -213,7 +215,7 @@ abstract class Aggregate
     }
 
     /**
-     * Restore from event stream
+     * Restore from event stream.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
      *
@@ -230,7 +232,7 @@ abstract class Aggregate
         $this->id = $aggregateEventsStream->id;
 
         /** @var AggregateEvent $aggregateEvent */
-        foreach($aggregateEventsStream->events as $aggregateEvent)
+        foreach ($aggregateEventsStream->events as $aggregateEvent)
         {
             $this->applyEvent($aggregateEvent->event);
 
@@ -254,6 +256,7 @@ abstract class Aggregate
 
         /**
          * @noinspection PhpUnhandledExceptionInspection
+         *
          * @var \DateTimeImmutable $currentDate
          */
         $currentDate = datetimeInstantiator('NOW');
@@ -262,7 +265,7 @@ abstract class Aggregate
     }
 
     /**
-     * Apply event
+     * Apply event.
      *
      * @param object $event
      *
@@ -278,7 +281,7 @@ abstract class Aggregate
     }
 
     /**
-     * Is internal event (for current class)
+     * Is internal event (for current class).
      *
      * @param object $event
      *
@@ -309,7 +312,7 @@ abstract class Aggregate
     private function processChildEvent(string $listenerName, object $event): void
     {
         /**
-         * Call child class method
+         * Call child class method.
          *
          * @param object $event
          *
@@ -317,7 +320,7 @@ abstract class Aggregate
          */
         $closure = function(object $event) use ($listenerName): void
         {
-            if(true === \method_exists($this, $listenerName))
+            if (true === \method_exists($this, $listenerName))
             {
                 $this->{$listenerName}($event);
             }
@@ -327,7 +330,7 @@ abstract class Aggregate
     }
 
     /**
-     * Create event listener name
+     * Create event listener name.
      *
      * @param object $event
      *
@@ -345,7 +348,7 @@ abstract class Aggregate
     }
 
     /**
-     * Increase aggregate version
+     * Increase aggregate version.
      *
      * @param int $step
      *
@@ -357,7 +360,7 @@ abstract class Aggregate
     }
 
     /**
-     * Clear all aggregate events
+     * Clear all aggregate events.
      *
      * @return void
      */

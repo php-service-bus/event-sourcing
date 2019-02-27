@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,8 +13,15 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
 use function Amp\call;
-use Amp\Promise;
 use function Latitude\QueryBuilder\field;
+use function ServiceBus\Storage\Sql\deleteQuery;
+use function ServiceBus\Storage\Sql\equalsCriteria;
+use function ServiceBus\Storage\Sql\fetchAll;
+use function ServiceBus\Storage\Sql\fetchOne;
+use function ServiceBus\Storage\Sql\insertQuery;
+use function ServiceBus\Storage\Sql\selectQuery;
+use function ServiceBus\Storage\Sql\updateQuery;
+use Amp\Promise;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\AggregateId;
 use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist;
@@ -23,20 +30,14 @@ use ServiceBus\Storage\Common\BinaryDataDecoder;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\QueryExecutor;
-use function ServiceBus\Storage\Sql\deleteQuery;
-use function ServiceBus\Storage\Sql\equalsCriteria;
-use function ServiceBus\Storage\Sql\fetchAll;
-use function ServiceBus\Storage\Sql\fetchOne;
-use function ServiceBus\Storage\Sql\insertQuery;
-use function ServiceBus\Storage\Sql\selectQuery;
-use function ServiceBus\Storage\Sql\updateQuery;
 
 /**
  *
  */
 final class SqlEventStreamStore implements EventStreamStore
 {
-    private const STREAMS_TABLE       = 'event_store_stream';
+    private const STREAMS_TABLE = 'event_store_stream';
+
     private const STREAM_EVENTS_TABLE = 'event_store_stream_events';
 
     /**
@@ -53,7 +54,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise
     {
@@ -63,6 +64,7 @@ final class SqlEventStreamStore implements EventStreamStore
             {
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
                 $transaction = yield $this->adapter->transaction();
@@ -90,7 +92,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise
     {
@@ -100,6 +102,7 @@ final class SqlEventStreamStore implements EventStreamStore
             {
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
                 $transaction = yield $this->adapter->transaction();
@@ -128,7 +131,7 @@ final class SqlEventStreamStore implements EventStreamStore
     /**
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function load(AggregateId $id, int $fromVersion = Aggregate::START_PLAYHEAD_INDEX, ?int $toVersion = null): Promise
     {
@@ -156,12 +159,14 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 return $aggregateEventStream;
             },
-            $id, $fromVersion, $toVersion
+            $id,
+            $fromVersion,
+            $toVersion
         );
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function close(AggregateId $id): Promise
     {
@@ -177,6 +182,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -188,7 +195,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise
     {
@@ -209,6 +216,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
                 $transaction = yield $this->adapter->transaction();
@@ -245,7 +253,9 @@ final class SqlEventStreamStore implements EventStreamStore
                     unset($transaction);
                 }
             },
-            $id, $toVersion, $force
+            $id,
+            $toVersion,
+            $force
         );
     }
 
@@ -253,13 +263,13 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param QueryExecutor              $queryExecutor
      * @param StoredAggregateEventStream $eventsStream
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\IncorrectParameterCast
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return \Generator
      */
     private static function doSaveStream(QueryExecutor $queryExecutor, StoredAggregateEventStream $eventsStream): \Generator
     {
@@ -268,13 +278,15 @@ final class SqlEventStreamStore implements EventStreamStore
             'identifier_class' => $eventsStream->aggregateIdClass,
             'aggregate_class'  => $eventsStream->aggregateClass,
             'created_at'       => $eventsStream->createdAt,
-            'closed_at'        => $eventsStream->closedAt
+            'closed_at'        => $eventsStream->closedAt,
         ]);
 
         $compiledQuery = $insertQuery->compile();
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -283,17 +295,17 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Saving events in stream
+     * Saving events in stream.
      *
      * @param QueryExecutor              $queryExecutor
      * @param StoredAggregateEventStream $eventsStream
-     *
-     * @return \Generator
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return \Generator
      */
     private static function doSaveEvents(QueryExecutor $queryExecutor, StoredAggregateEventStream $eventsStream): \Generator
     {
@@ -301,7 +313,10 @@ final class SqlEventStreamStore implements EventStreamStore
 
         if(0 !== $eventsCount)
         {
-            /** @psalm-suppress TooManyTemplateParams Wrong Promise template */
+            /**
+             * @psalm-suppress TooManyTemplateParams Wrong Promise template
+             * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+             */
             yield $queryExecutor->execute(
                 self::createSaveEventQueryString($eventsCount),
                 self::collectSaveEventQueryParameters($eventsStream)
@@ -315,12 +330,12 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param QueryExecutor $queryExecutor
      * @param AggregateId   $id
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\ResultSetIterationFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return \Generator
      */
     private static function doLoadStream(QueryExecutor $queryExecutor, AggregateId $id): \Generator
     {
@@ -334,6 +349,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = /** @noinspection PhpUnhandledExceptionInspection */
@@ -342,6 +359,7 @@ final class SqlEventStreamStore implements EventStreamStore
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-var      array<string, string>|null $data
+         *
          * @var array $data
          */
         $data = /** @noinspection PhpUnhandledExceptionInspection */
@@ -356,13 +374,13 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param int           $fromVersion
      * @param int|null      $toVersion
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\ResultSetIterationFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return \Generator
      */
     private static function doLoadStreamEvents(
         QueryExecutor $queryExecutor,
@@ -387,6 +405,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -394,6 +414,7 @@ final class SqlEventStreamStore implements EventStreamStore
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-var      array<int, array>|null $result
+         *
          * @var array $result
          */
         $result = yield fetchAll($resultSet);
@@ -410,11 +431,11 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param string        $streamId
      * @param int           $toVersion
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return \Generator
      */
     private static function doDeleteTailEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
     {
@@ -427,6 +448,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = /** @noinspection PhpUnhandledExceptionInspection */
@@ -444,11 +467,11 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param string        $streamId
      * @param int           $toVersion
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return \Generator
      */
     private static function doSkipEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
     {
@@ -461,6 +484,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = /** @noinspection PhpUnhandledExceptionInspection */
@@ -476,12 +501,12 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param string        $streamId
      * @param int           $toVersion
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return \Generator
      */
     private static function doRestoreEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
     {
@@ -494,6 +519,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
         /**
          * @psalm-suppress TooManyTemplateParams Wrong Promise template
+         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+         *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
         $resultSet = yield $executor->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -502,7 +529,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Transform events stream array data to stored representation
+     * Transform events stream array data to stored representation.
      *
      * @psalm-param array<string, string>  $streamData
      * @psalm-param array<int, array>|null $streamEventsData
@@ -511,9 +538,9 @@ final class SqlEventStreamStore implements EventStreamStore
      * @param array           $streamData
      * @param array           $streamEventsData
      *
-     * @return StoredAggregateEventStream
-     *
      * @throws \LogicException
+     *
+     * @return StoredAggregateEventStream
      */
     private static function restoreEventStream(
         DatabaseAdapter $adapter,
@@ -541,16 +568,16 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Restore events from rows
+     * Restore events from rows.
      *
      * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
      *
      * @param BinaryDataDecoder $decoder
      * @param array|null        $eventsData
      *
-     * @return \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
-     *
      * @throws \LogicException
+     *
+     * @return \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
      */
     private static function restoreEvents(BinaryDataDecoder $decoder, ?array $eventsData): array
     {
@@ -600,7 +627,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Create a sql query to store events
+     * Create a sql query to store events.
      *
      * @param int $eventsCount
      *
@@ -613,13 +640,14 @@ final class SqlEventStreamStore implements EventStreamStore
             'INSERT INTO %s (id, stream_id, playhead, event_class, payload, occured_at, recorded_at) VALUES %s',
             self::STREAM_EVENTS_TABLE,
             \implode(
-                ', ', \array_fill(0, $eventsCount, '(?, ?, ?, ?, ?, ?, ?)')
+                ', ',
+                \array_fill(0, $eventsCount, '(?, ?, ?, ?, ?, ?, ?)')
             )
         );
     }
 
     /**
-     * Gathering parameters for sending to a request to save events
+     * Gathering parameters for sending to a request to save events.
      *
      * @param StoredAggregateEventStream $eventsStream
      *
@@ -630,7 +658,7 @@ final class SqlEventStreamStore implements EventStreamStore
         $queryParameters = [];
         $rowSetIndex     = 0;
 
-        /** @psalm-var array<int, string|int> $parameters */
+        /** @psalm-var array<int, string|int|float|null> $parameters */
         foreach(self::prepareEventRows($eventsStream) as $parameters)
         {
             foreach($parameters as $parameter)
@@ -645,7 +673,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Prepare events to insert
+     * Prepare events to insert.
      *
      * @psalm-return array<int, array<int, string|int>>
      *
@@ -660,7 +688,6 @@ final class SqlEventStreamStore implements EventStreamStore
         foreach($eventsStream->storedAggregateEvents as $storedAggregateEvent)
         {
             /** @var StoredAggregateEvent $storedAggregateEvent */
-
             $row = [
                 $storedAggregateEvent->eventId,
                 $eventsStream->aggregateId,
@@ -668,7 +695,7 @@ final class SqlEventStreamStore implements EventStreamStore
                 $storedAggregateEvent->eventClass,
                 \base64_encode($storedAggregateEvent->eventData),
                 $storedAggregateEvent->occuredAt,
-                \date('Y-m-d H:i:s')
+                \date('Y-m-d H:i:s'),
             ];
 
             $eventsRows[] = $row;

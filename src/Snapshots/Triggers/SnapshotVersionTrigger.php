@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -16,14 +16,14 @@ use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\Snapshots\Snapshot;
 
 /**
- * Generation of snapshots every N versions
+ * Generation of snapshots every N versions.
  */
 class SnapshotVersionTrigger implements SnapshotTrigger
 {
     private const DEFAULT_VERSION_STEP = 10;
 
     /**
-     * Version step interval
+     * Version step interval.
      *
      * @var int
      */
@@ -38,11 +38,11 @@ class SnapshotVersionTrigger implements SnapshotTrigger
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function snapshotMustBeCreated(Aggregate $aggregate, Snapshot $previousSnapshot = null): bool
     {
-        if(null === $previousSnapshot)
+        if (null === $previousSnapshot)
         {
             return true;
         }

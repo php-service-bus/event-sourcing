@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -22,55 +22,55 @@ use ServiceBus\EventSourcing\Indexes\IndexValue;
 interface IndexStore
 {
     /**
-     * Find stored value
+     * Find stored value.
      *
      * @param IndexKey $indexKey
-     *
-     * @return Promise<\ServiceBus\EventSourcing\Indexes\IndexValue|null>
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<\ServiceBus\EventSourcing\Indexes\IndexValue|null>
      */
     public function find(IndexKey $indexKey): Promise;
 
     /**
-     * Add a new value
+     * Add a new value.
      *
      * @param IndexKey   $indexKey
      * @param IndexValue $value $value
-     *
-     * @return Promise<int> Returns the number of added records
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return Promise<int> Returns the number of added records
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise;
 
     /**
      * @param IndexKey $indexKey
      *
-     * @return Promise It doesn't return any result
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise It doesn't return any result
      */
     public function delete(IndexKey $indexKey): Promise;
 
     /**
-     * Update existent value
+     * Update existent value.
      *
      * @param IndexKey   $indexKey
      * @param IndexValue $value
      *
-     * @return Promise<int> Returns the number of updated records
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<int> Returns the number of updated records
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise;
 }

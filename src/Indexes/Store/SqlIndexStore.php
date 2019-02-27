@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,16 +13,16 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Indexes\Store;
 
 use function Amp\call;
-use Amp\Promise;
-use ServiceBus\EventSourcing\Indexes\IndexKey;
-use ServiceBus\EventSourcing\Indexes\IndexValue;
-use ServiceBus\Storage\Common\DatabaseAdapter;
 use function ServiceBus\Storage\Sql\deleteQuery;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\insertQuery;
 use function ServiceBus\Storage\Sql\selectQuery;
 use function ServiceBus\Storage\Sql\updateQuery;
+use Amp\Promise;
+use ServiceBus\EventSourcing\Indexes\IndexKey;
+use ServiceBus\EventSourcing\Indexes\IndexValue;
+use ServiceBus\Storage\Common\DatabaseAdapter;
 
 /**
  *
@@ -47,7 +47,7 @@ final class SqlIndexStore implements IndexStore
     /**
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function find(IndexKey $indexKey): Promise
     {
@@ -63,12 +63,15 @@ final class SqlIndexStore implements IndexStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 *
                  * @var array<string, mixed>|null $result
                  */
                 $result = yield fetchOne($resultSet);
@@ -79,7 +82,6 @@ final class SqlIndexStore implements IndexStore
                 {
                     return IndexValue::create($result['value_data']);
                 }
-
             },
             $indexKey
         );
@@ -88,7 +90,7 @@ final class SqlIndexStore implements IndexStore
     /**
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise
     {
@@ -100,13 +102,15 @@ final class SqlIndexStore implements IndexStore
                 $insertQuery = insertQuery(self::TABLE_NAME, [
                     'index_tag'  => $indexKey->indexName,
                     'value_key'  => $indexKey->valueKey,
-                    'value_data' => $value->value
+                    'value_data' => $value->value,
                 ]);
 
                 $compiledQuery = $insertQuery->compile();
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -117,12 +121,13 @@ final class SqlIndexStore implements IndexStore
 
                 return $affectedRows;
             },
-            $indexKey, $value
+            $indexKey,
+            $value
         );
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function delete(IndexKey $indexKey): Promise
     {
@@ -138,6 +143,8 @@ final class SqlIndexStore implements IndexStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -151,7 +158,7 @@ final class SqlIndexStore implements IndexStore
     /**
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise
     {
@@ -167,6 +174,8 @@ final class SqlIndexStore implements IndexStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -177,7 +186,8 @@ final class SqlIndexStore implements IndexStore
 
                 return $affectedRows;
             },
-            $indexKey, $value
+            $indexKey,
+            $value
         );
     }
 }

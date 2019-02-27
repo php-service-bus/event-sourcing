@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -27,21 +27,21 @@ use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
 final class Snapshotter
 {
     /**
-     * Snapshot storage
+     * Snapshot storage.
      *
      * @var SnapshotStore
      */
     private $store;
 
     /**
-     * Snapshot generation trigger
+     * Snapshot generation trigger.
      *
      * @var SnapshotTrigger
      */
     private $trigger;
 
     /**
-     * Logger
+     * Logger.
      *
      * @var LoggerInterface
      */
@@ -56,15 +56,14 @@ final class Snapshotter
         SnapshotStore $store,
         SnapshotTrigger $trigger,
         LoggerInterface $logger = null
-    )
-    {
+    ) {
         $this->store   = $store;
         $this->trigger = $trigger;
         $this->logger  = $logger ?? new NullLogger();
     }
 
     /**
-     * Load snapshot for aggregate
+     * Load snapshot for aggregate.
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
@@ -85,7 +84,7 @@ final class Snapshotter
                     /** @var Snapshot|null $snapshot */
                     $snapshot = yield $this->store->load($id);
                 }
-                catch(\Throwable $throwable)
+                catch (\Throwable $throwable)
                 {
                     $this->logger->error($throwable->getMessage(), ['e' => $throwable]);
                 }
@@ -97,7 +96,7 @@ final class Snapshotter
     }
 
     /**
-     * Store new snapshot
+     * Store new snapshot.
      *
      * @param Snapshot $snapshot
      *
@@ -114,7 +113,7 @@ final class Snapshotter
                     yield $this->store->remove($snapshot->aggregate->id());
                     yield $this->store->save($snapshot);
                 }
-                catch(\Throwable $throwable)
+                catch (\Throwable $throwable)
                 {
                     $this->logger->error($throwable->getMessage(), ['e' => $throwable]);
                 }
@@ -124,7 +123,7 @@ final class Snapshotter
     }
 
     /**
-     * A snapshot must be created
+     * A snapshot must be created.
      *
      * @param Aggregate $aggregate
      * @param Snapshot  $previousSnapshot

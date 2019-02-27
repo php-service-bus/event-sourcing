@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,17 +13,17 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\EventStream;
 
 use function Amp\call;
-use Amp\Promise;
 use function ServiceBus\Common\createWithoutConstructor;
 use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\EventSourcing\EventStream\Store\streamToDomainRepresentation;
+use function ServiceBus\EventSourcing\EventStream\Store\streamToStoredRepresentation;
+use Amp\Promise;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\AggregateId;
 use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream;
-use function ServiceBus\EventSourcing\EventStream\Store\streamToDomainRepresentation;
-use function ServiceBus\EventSourcing\EventStream\Store\streamToStoredRepresentation;
 use ServiceBus\EventSourcing\Snapshots\Snapshot;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 
@@ -33,6 +33,7 @@ use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 final class EventStreamRepository
 {
     public const REVERT_MODE_SOFT_DELETE = 1;
+
     public const REVERT_MODE_DELETE      = 2;
 
     /**
@@ -63,7 +64,7 @@ final class EventStreamRepository
     }
 
     /**
-     * Load aggregate
+     * Load aggregate.
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
@@ -83,7 +84,7 @@ final class EventStreamRepository
                 /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
                 $loadedSnapshot = yield $this->snapshotter->load($id);
 
-                if(null !== $loadedSnapshot)
+                if (null !== $loadedSnapshot)
                 {
                     $aggregate         = $loadedSnapshot->aggregate;
                     $fromStreamVersion = $aggregate->version() + 1;
@@ -103,7 +104,7 @@ final class EventStreamRepository
     }
 
     /**
-     * Save a new event stream
+     * Save a new event stream.
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
@@ -119,6 +120,7 @@ final class EventStreamRepository
             {
                 /**
                  * @psalm-var array<int, object> $raisedEvents
+                 *
                  * @var object[] $raisedEvents
                  */
                 $raisedEvents = yield from $this->doStore($aggregate, true);
@@ -130,7 +132,7 @@ final class EventStreamRepository
     }
 
     /**
-     * Update existent event stream (append events)
+     * Update existent event stream (append events).
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
@@ -146,6 +148,7 @@ final class EventStreamRepository
             {
                 /**
                  * @psalm-var array<int, object> $raisedEvents
+                 *
                  * @var object[] $raisedEvents
                  */
                 $raisedEvents = yield from $this->doStore($aggregate, false);
@@ -157,7 +160,7 @@ final class EventStreamRepository
     }
 
     /**
-     * Revert aggregate to specified version
+     * Revert aggregate to specified version.
      *
      * Mode options:
      *   - 1 (self::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may be version
@@ -194,7 +197,9 @@ final class EventStreamRepository
 
                 return $aggregate;
             },
-            $aggregate, $toVersion, $mode
+            $aggregate,
+            $toVersion,
+            $mode
         );
     }
 
@@ -202,14 +207,14 @@ final class EventStreamRepository
      * @param Aggregate $aggregate
      * @param bool      $isNew
      *
-     * @return \Generator
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return \Generator
      */
     private function doStore(Aggregate $aggregate, bool $isNew): \Generator
     {
@@ -228,7 +233,7 @@ final class EventStreamRepository
         /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
         $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
 
-        if(true === $this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
+        if (true === $this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
         {
             yield $this->snapshotter->store(Snapshot::create($aggregate, $aggregate->version()));
         }
@@ -239,27 +244,27 @@ final class EventStreamRepository
     }
 
     /**
-     * Restore the aggregate from the event stream/Add missing events to the aggregate from the snapshot
+     * Restore the aggregate from the event stream/Add missing events to the aggregate from the snapshot.
      *
      * @param Aggregate|null                  $aggregate
      * @param StoredAggregateEventStream|null $storedEventStream
      *
-     * @return Aggregate|null
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
+     *
+     * @return Aggregate|null
      */
     private function restoreStream(?Aggregate $aggregate, ?StoredAggregateEventStream $storedEventStream): ?Aggregate
     {
-        if(null === $storedEventStream)
+        if (null === $storedEventStream)
         {
             return null;
         }
 
         $eventStream = streamToDomainRepresentation($this->serializer, $storedEventStream);
 
-        if(null === $aggregate)
+        if (null === $aggregate)
         {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             /** @var Aggregate $aggregate */

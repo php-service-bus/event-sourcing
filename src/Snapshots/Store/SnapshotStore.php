@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -22,39 +22,39 @@ use ServiceBus\EventSourcing\Snapshots\Snapshot;
 interface SnapshotStore
 {
     /**
-     * Save snapshot
+     * Save snapshot.
      *
      * @param Snapshot $snapshot
-     *
-     * @return Promise It does not return any result
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return Promise It does not return any result
      */
     public function save(Snapshot $snapshot): Promise;
 
     /**
-     * Load snapshot
+     * Load snapshot.
      *
      * @param AggregateId $id
      *
-     * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
      */
     public function load(AggregateId $id): Promise;
 
     /**
-     * Remove snapshot from database
+     * Remove snapshot from database.
      *
      * @param AggregateId $id
      *
-     * @return Promise It does not return any result
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return Promise It does not return any result
      */
     public function remove(AggregateId $id): Promise;
 }

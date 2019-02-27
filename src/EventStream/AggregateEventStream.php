@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -15,7 +15,7 @@ namespace ServiceBus\EventSourcing\EventStream;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
- * Event stream
+ * Event stream.
  *
  * @property-read AggregateId                                                      $id
  * @property-read string                                                           $aggregateClass
@@ -27,43 +27,44 @@ use ServiceBus\EventSourcing\AggregateId;
 final class AggregateEventStream
 {
     /**
-     * Stream (aggregate) identifier
+     * Stream (aggregate) identifier.
      *
      * @var AggregateId
      */
     public $id;
 
     /**
-     * Aggregate class
+     * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
      * @var string
      */
     public $aggregateClass;
 
     /**
-     * Event collection
+     * Event collection.
      *
      * @var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
      */
     public $events;
 
     /**
-     * Origin event collection
+     * Origin event collection.
      *
      * @var array<int, object>
      */
     public $originEvents;
 
     /**
-     * Created at datetime
+     * Created at datetime.
      *
      * @var \DateTimeImmutable
      */
     public $createdAt;
 
     /**
-     * Closed at datetime
+     * Closed at datetime.
      *
      * @var \DateTimeImmutable|null
      */
@@ -86,8 +87,7 @@ final class AggregateEventStream
         array $events,
         \DateTimeImmutable $createdAt,
         ?\DateTimeImmutable $closedAt
-    ): self
-    {
+    ): self {
         return new self($id, $aggregateClass, $events, $createdAt, $closedAt);
     }
 
@@ -106,8 +106,7 @@ final class AggregateEventStream
         array $events,
         \DateTimeImmutable $createdAt,
         ?\DateTimeImmutable $closedAt
-    )
-    {
+    ) {
         $this->id             = $id;
         $this->aggregateClass = $aggregateClass;
         $this->events         = self::sortEvents($events);
@@ -125,10 +124,9 @@ final class AggregateEventStream
     {
         $result = [];
 
-        foreach($events as $aggregateEvent)
+        foreach ($events as $aggregateEvent)
         {
             /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
-
             $result[$aggregateEvent->playhead] = $aggregateEvent;
         }
 

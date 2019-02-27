@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -16,7 +16,7 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed;
 use ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType;
 
 /**
- * The value stored in the index
+ * The value stored in the index.
  *
  * @property-read mixed $value
  */
@@ -30,10 +30,10 @@ final class IndexValue
     /**
      * @param mixed $value
      *
-     * @return self
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
+     *
+     * @return self
      */
     public static function create($value): self
     {
@@ -46,13 +46,13 @@ final class IndexValue
     /**
      * @param mixed $value
      *
-     * @return void
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
+     *
+     * @return void
      */
     private static function assertNotEmpty($value): void
     {
-        if('' === (string) $value)
+        if ('' === (string) $value)
         {
             throw new EmptyValuesNotAllowed('Value can not be empty');
         }
@@ -61,13 +61,13 @@ final class IndexValue
     /**
      * @param mixed $value
      *
-     * @return void
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
+     *
+     * @return void
      */
     private static function assertIsScalar($value): void
     {
-        if(false === \is_scalar($value))
+        if (false === \is_scalar($value))
         {
             throw new InvalidValueType(
                 \sprintf('The value must be of type "scalar". "%s" passed', \gettype($value))

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -12,9 +12,9 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Tests;
 
+use function ServiceBus\Common\invokeReflectionMethod;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use function ServiceBus\Common\invokeReflectionMethod;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream;
@@ -29,9 +29,9 @@ final class AggregateTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function changeClosedStreamState(): void
     {
@@ -57,8 +57,8 @@ final class AggregateTest extends TestCase
         static::assertTrue(Uuid::isValid($aggregateClosedEvent->id));
         /** @noinspection UnnecessaryAssertionInspection */
         static::assertInstanceOf(\DateTimeImmutable::class, $aggregateClosedEvent->datetime);
-        static::assertEquals(TestAggregate::class, $aggregateClosedEvent->aggregateClass);
-        static::assertEquals(TestAggregateId::class, $aggregateClosedEvent->idClass);
+        static::assertSame(TestAggregate::class, $aggregateClosedEvent->aggregateClass);
+        static::assertSame(TestAggregateId::class, $aggregateClosedEvent->idClass);
 
         $aggregate->firstAction('root');
     }
@@ -66,9 +66,9 @@ final class AggregateTest extends TestCase
     /**
      * @test
      *
-     * @return void
-     *
      * @throws \Throwable
+     *
+     * @return void
      */
     public function aggregateCreated(): void
     {
@@ -91,7 +91,7 @@ final class AggregateTest extends TestCase
         static::assertTrue(Uuid::isValid($aggregateCreatedEvent->id));
         /** @noinspection UnnecessaryAssertionInspection */
         static::assertInstanceOf(\DateTimeImmutable::class, $aggregateCreatedEvent->datetime);
-        static::assertEquals(TestAggregate::class, $aggregateCreatedEvent->aggregateClass);
-        static::assertEquals(TestAggregateId::class, $aggregateCreatedEvent->idClass);
+        static::assertSame(TestAggregate::class, $aggregateCreatedEvent->aggregateClass);
+        static::assertSame(TestAggregateId::class, $aggregateCreatedEvent->idClass);
     }
 }

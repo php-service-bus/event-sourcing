@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,7 +13,7 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
 /**
- * Aggregate event stream data
+ * Aggregate event stream data.
  *
  * @property-read string                                                                       $aggregateId
  * @property-read string                                                                       $aggregateIdClass
@@ -25,44 +25,46 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 final class StoredAggregateEventStream
 {
     /**
-     * Aggregate id
+     * Aggregate id.
      *
      * @var string
      */
     public $aggregateId;
 
     /**
-     * Aggregate id class
+     * Aggregate id class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
+     *
      * @var string
      */
     public $aggregateIdClass;
 
     /**
-     * Aggregate class
+     * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
      * @var string
      */
     public $aggregateClass;
 
     /**
-     * Stored events data
+     * Stored events data.
      *
      * @var array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
      */
     public $storedAggregateEvents;
 
     /**
-     * Stream created at datetime
+     * Stream created at datetime.
      *
      * @var string
      */
     public $createdAt;
 
     /**
-     * Stream closed at datetime
+     * Stream closed at datetime.
      *
      * @var string|null
      */
@@ -89,8 +91,7 @@ final class StoredAggregateEventStream
         array $storedAggregateEvents,
         string $createdAt,
         ?string $closedAt = null
-    ): self
-    {
+    ): self {
         return new self($aggregateId, $aggregateIdClass, $aggregateClass, $storedAggregateEvents, $createdAt, $closedAt);
     }
 
@@ -112,8 +113,7 @@ final class StoredAggregateEventStream
         array $storedAggregateEvents,
         string $createdAt,
         ?string $closedAt = null
-    )
-    {
+    ) {
         $this->aggregateId           = $aggregateId;
         $this->aggregateIdClass      = $aggregateIdClass;
         $this->aggregateClass        = $aggregateClass;

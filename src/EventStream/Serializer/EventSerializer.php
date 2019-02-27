@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -18,27 +18,27 @@ namespace ServiceBus\EventSourcing\EventStream\Serializer;
 interface EventSerializer
 {
     /**
-     * Serialize event object to string
+     * Serialize event object to string.
      *
      * @param object $event
      *
-     * @return string
-     *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
+     *
+     * @return string
      */
     public function serialize(object $event): string;
 
     /**
-     * Restore event object
+     * Restore event object.
      *
      * @psalm-param class-string $eventClass
      *
      * @param string $eventClass
      * @param string $payload
      *
-     * @return object
-     *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
+     *
+     * @return object
      */
     public function unserialize(string $eventClass, string $payload): object;
 }

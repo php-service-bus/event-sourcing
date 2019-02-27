@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -16,12 +16,12 @@ use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Exceptions\InvalidAggregateIdentifier;
 
 /**
- * Base aggregate identifier class
+ * Base aggregate identifier class.
  */
 abstract class AggregateId
 {
     /**
-     * Identifier
+     * Identifier.
      *
      * @var string
      */
@@ -45,7 +45,7 @@ abstract class AggregateId
      */
     final public function __construct(string $id)
     {
-        if('' === $id)
+        if ('' === $id)
         {
             throw InvalidAggregateIdentifier::emptyId();
         }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Sourcing implementation
+ * Event Sourcing implementation.
  *
  * @author  Maksim Masiukevich <dev@async-php.com>
  * @license MIT
@@ -13,16 +13,16 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Snapshots\Store;
 
 use function Amp\call;
-use Amp\Promise;
 use function ServiceBus\Common\datetimeToString;
-use ServiceBus\EventSourcing\AggregateId;
-use ServiceBus\EventSourcing\Snapshots\Snapshot;
-use ServiceBus\Storage\Common\DatabaseAdapter;
 use function ServiceBus\Storage\Sql\deleteQuery;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\insertQuery;
 use function ServiceBus\Storage\Sql\selectQuery;
+use Amp\Promise;
+use ServiceBus\EventSourcing\AggregateId;
+use ServiceBus\EventSourcing\Snapshots\Snapshot;
+use ServiceBus\Storage\Common\DatabaseAdapter;
 
 /**
  *
@@ -45,7 +45,7 @@ final class SqlSnapshotStore implements SnapshotStore
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function save(Snapshot $snapshot): Promise
     {
@@ -59,13 +59,15 @@ final class SqlSnapshotStore implements SnapshotStore
                     'aggregate_class'    => \get_class($snapshot->aggregate),
                     'version'            => $snapshot->aggregate->version(),
                     'payload'            => \base64_encode(\serialize($snapshot)),
-                    'created_at'         => datetimeToString($snapshot->aggregate->getCreatedAt())
+                    'created_at'         => datetimeToString($snapshot->aggregate->getCreatedAt()),
                 ]);
 
                 $compiledQuery = $insertQuery->compile();
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
@@ -79,7 +81,7 @@ final class SqlSnapshotStore implements SnapshotStore
     /**
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function load(AggregateId $id): Promise
     {
@@ -97,12 +99,15 @@ final class SqlSnapshotStore implements SnapshotStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 *
                  * @var array<string, string>|null $data
                  */
                 $data = yield fetchOne($resultSet);
@@ -125,7 +130,7 @@ final class SqlSnapshotStore implements SnapshotStore
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function remove(AggregateId $id): Promise
     {
@@ -141,6 +146,8 @@ final class SqlSnapshotStore implements SnapshotStore
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
+                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
+                 *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
                 $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
