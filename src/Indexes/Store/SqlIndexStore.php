@@ -78,7 +78,7 @@ final class SqlIndexStore implements IndexStore
 
                 unset($selectQuery, $compiledQuery, $resultSet);
 
-                if(null !== $result && true === \is_array($result))
+                if (null !== $result && true === \is_array($result))
                 {
                     return IndexValue::create($result['value_data']);
                 }

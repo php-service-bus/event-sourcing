@@ -112,7 +112,7 @@ final class SqlSnapshotStore implements SnapshotStore
                  */
                 $data = yield fetchOne($resultSet);
 
-                if(true === \is_array($data) && 0 !== \count($data))
+                if (true === \is_array($data) && 0 !== \count($data))
                 {
                     /** @var Snapshot $storedSnapshot */
                     $storedSnapshot = \unserialize(
