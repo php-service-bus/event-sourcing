@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a6e737a28ea1101cc0de1f6c33b5a839",
-    "content-hash": "e2d6758dcc0f8dfc84f5d1ac6857f5b6",
+    "hash": "074daaf4b52fb784be7b039106a3d8f9",
+    "content-hash": "52da94af69801a65f630aeed92bee538",
     "packages": [
         {
             "name": "amphp/amp",
@@ -358,16 +358,16 @@
         },
         {
             "name": "php-service-bus/storage-common",
-            "version": "v3.0.9",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/storage-common.git",
-                "reference": "6815e0f64bb74c5e5bb1d047831f8a21f2551293"
+                "reference": "48eb1fec1e88e5c11fb8030d1f757ec1ff6d16f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/storage-common/zipball/6815e0f64bb74c5e5bb1d047831f8a21f2551293",
-                "reference": "6815e0f64bb74c5e5bb1d047831f8a21f2551293",
+                "url": "https://api.github.com/repos/php-service-bus/storage-common/zipball/48eb1fec1e88e5c11fb8030d1f757ec1ff6d16f4",
+                "reference": "48eb1fec1e88e5c11fb8030d1f757ec1ff6d16f4",
                 "shasum": ""
             },
             "require": {
@@ -403,7 +403,7 @@
                 "command-bus",
                 "messaging"
             ],
-            "time": "2019-03-17 18:21:27"
+            "time": "2019-03-17 19:22:54"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -2368,16 +2368,16 @@
         },
         {
             "name": "php-service-bus/storage-sql",
-            "version": "v3.0.9",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-service-bus/storage-sql.git",
-                "reference": "d5da6392961285cfa39b9b72d8f36c0f62a90527"
+                "reference": "2992150a17b7f829b3ee0ff0991ec8d8375175b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-service-bus/storage-sql/zipball/d5da6392961285cfa39b9b72d8f36c0f62a90527",
-                "reference": "d5da6392961285cfa39b9b72d8f36c0f62a90527",
+                "url": "https://api.github.com/repos/php-service-bus/storage-sql/zipball/2992150a17b7f829b3ee0ff0991ec8d8375175b7",
+                "reference": "2992150a17b7f829b3ee0ff0991ec8d8375175b7",
                 "shasum": ""
             },
             "require": {
@@ -2385,7 +2385,7 @@
                 "ext-pgsql": "*",
                 "latitude/latitude": "^3.1",
                 "php": ">=7.2",
-                "php-service-bus/storage-common": "^v3.0",
+                "php-service-bus/storage-common": "^v3.1",
                 "psr/log": "1.1.*"
             },
             "require-dev": {
@@ -2425,7 +2425,7 @@
                 "postgresql",
                 "sql"
             ],
-            "time": "2019-03-17 18:25:42"
+            "time": "2019-03-17 19:43:16"
         },
         {
             "name": "phpmyadmin/sql-parser",
@@ -4345,7 +4345,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
