@@ -13,11 +13,11 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Indexes\Store;
 
 use function Amp\call;
-use function ServiceBus\Storage\Sql\deleteQuery;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
+use function ServiceBus\Storage\Sql\find;
 use function ServiceBus\Storage\Sql\insertQuery;
-use function ServiceBus\Storage\Sql\selectQuery;
+use function ServiceBus\Storage\Sql\remove;
 use function ServiceBus\Storage\Sql\updateQuery;
 use Amp\Promise;
 use ServiceBus\EventSourcing\Indexes\IndexKey;
@@ -51,23 +51,19 @@ final class SqlIndexStore implements IndexStore
      */
     public function find(IndexKey $indexKey): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(IndexKey $indexKey): \Generator
+            static function(IndexKey $indexKey) use ($adapter): \Generator
             {
-                $selectQuery = selectQuery(self::TABLE_NAME)
-                    ->where(equalsCriteria('index_tag', $indexKey->indexName))
-                    ->andWhere(equalsCriteria('value_key', $indexKey->valueKey));
+                $criteria = [
+                    equalsCriteria('index_tag', $indexKey->indexName),
+                    equalsCriteria('value_key', $indexKey->valueKey)
+                ];
 
-                $compiledQuery = $selectQuery->compile();
-
-                /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 *
-                 * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-                 */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                /** @var @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
+                $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
 
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
@@ -78,7 +74,7 @@ final class SqlIndexStore implements IndexStore
 
                 unset($selectQuery, $compiledQuery, $resultSet);
 
-                if (null !== $result && true === \is_array($result))
+                if(null !== $result && true === \is_array($result))
                 {
                     return IndexValue::create($result['value_data']);
                 }
@@ -94,9 +90,11 @@ final class SqlIndexStore implements IndexStore
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(IndexKey $indexKey, IndexValue $value): \Generator
+            static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
             {
                 /** @var \Latitude\QueryBuilder\Query\InsertQuery $insertQuery */
                 $insertQuery = insertQuery(self::TABLE_NAME, [
@@ -113,13 +111,9 @@ final class SqlIndexStore implements IndexStore
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                $resultSet = yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
-                $affectedRows = $resultSet->affectedRows();
-
-                unset($insertQuery, $compiledQuery, $resultSet);
-
-                return $affectedRows;
+                return $resultSet->affectedRows();
             },
             $indexKey,
             $value
@@ -131,25 +125,18 @@ final class SqlIndexStore implements IndexStore
      */
     public function delete(IndexKey $indexKey): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(IndexKey $indexKey): \Generator
+            static function(IndexKey $indexKey) use ($adapter): \Generator
             {
-                $deleteQuery = deleteQuery(self::TABLE_NAME)
-                    ->where(equalsCriteria('index_tag', $indexKey->indexName))
-                    ->andWhere(equalsCriteria('value_key', $indexKey->valueKey));
+                $criteria = [
+                    equalsCriteria('index_tag', $indexKey->indexName),
+                    equalsCriteria('value_key', $indexKey->valueKey)
+                ];
 
-                $compiledQuery = $deleteQuery->compile();
-
-                /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 *
-                 * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-                 */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
-
-                unset($deleteQuery, $compiledQuery, $resultSet);
+                yield remove($adapter, self::TABLE_NAME, $criteria);
             },
             $indexKey
         );
@@ -162,9 +149,11 @@ final class SqlIndexStore implements IndexStore
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(IndexKey $indexKey, IndexValue $value): \Generator
+            static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
             {
                 $updateQuery = updateQuery(self::TABLE_NAME, ['value_data' => $value->value])
                     ->where(equalsCriteria('index_tag', $indexKey->indexName))
@@ -178,13 +167,9 @@ final class SqlIndexStore implements IndexStore
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                $resultSet = yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
-                $affectedRows = $resultSet->affectedRows();
-
-                unset($updateQuery, $compiledQuery, $resultSet);
-
-                return $affectedRows;
+                return $resultSet->affectedRows();
             },
             $indexKey,
             $value

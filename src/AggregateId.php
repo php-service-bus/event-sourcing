@@ -45,7 +45,7 @@ abstract class AggregateId
      */
     final public function __construct(string $id)
     {
-        if ('' === $id)
+        if('' === $id)
         {
             throw InvalidAggregateIdentifier::emptyId();
         }
@@ -54,6 +54,16 @@ abstract class AggregateId
     }
 
     /**
+     * @return string
+     */
+    public function toString(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @deprecated
+     *
      * @return string
      */
     public function __toString(): string

@@ -26,6 +26,6 @@ final class EventStreamDoesNotExist extends \InvalidArgumentException
      */
     public static function create(AggregateId $id): self
     {
-        return new self(\sprintf('Event stream with identifier "%s" doesn\'t exist', $id));
+        return new self(\sprintf('Event stream with identifier "%s" doesn\'t exist', $id->toString()));
     }
 }

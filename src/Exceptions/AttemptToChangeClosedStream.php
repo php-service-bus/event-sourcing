@@ -27,7 +27,7 @@ final class AttemptToChangeClosedStream extends \RuntimeException
         parent::__construct(
             \sprintf(
                 'Can not add an event to a closed thread. Aggregate: "%s:%s"',
-                $id,
+                $id->toString(),
                 \get_class($id)
             )
         );

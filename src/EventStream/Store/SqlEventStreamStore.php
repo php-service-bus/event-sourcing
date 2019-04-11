@@ -58,16 +58,18 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(StoredAggregateEventStream $aggregateEventStream): \Generator
+            static function(StoredAggregateEventStream $aggregateEventStream) use ($adapter): \Generator
             {
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
-                $transaction = yield $this->adapter->transaction();
+                $transaction = yield $adapter->transaction();
 
                 try
                 {
@@ -76,7 +78,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch (\Throwable $throwable)
+                catch(\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -96,16 +98,18 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(StoredAggregateEventStream $aggregateEventStream): \Generator
+            static function(StoredAggregateEventStream $aggregateEventStream) use ($adapter): \Generator
             {
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
-                $transaction = yield $this->adapter->transaction();
+                $transaction = yield $adapter->transaction();
 
                 try
                 {
@@ -113,7 +117,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch (\Throwable $throwable)
+                catch(\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -135,26 +139,28 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function load(AggregateId $id, int $fromVersion = Aggregate::START_PLAYHEAD_INDEX, ?int $toVersion = null): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(AggregateId $id, int $fromVersion, ?int $toVersion): \Generator
+            static function(AggregateId $id, int $fromVersion, ?int $toVersion) use ($adapter): \Generator
             {
                 $aggregateEventStream = null;
 
                 /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($this->adapter, $id);
+                $streamData = yield from self::doLoadStream($adapter, $id);
 
-                if (null !== $streamData)
+                if(null !== $streamData)
                 {
                     /** @var array<int, array>|null $streamEventsData */
                     $streamEventsData = yield from self::doLoadStreamEvents(
-                        $this->adapter,
+                        $adapter,
                         (string) $streamData['id'],
                         $fromVersion,
                         $toVersion
                     );
 
-                    $aggregateEventStream = self::restoreEventStream($this->adapter, $streamData, $streamEventsData);
+                    $aggregateEventStream = self::restoreEventStream($adapter, $streamData, $streamEventsData);
                 }
 
                 return $aggregateEventStream;
@@ -170,12 +176,14 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function close(AggregateId $id): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(AggregateId $id): \Generator
+            static function(AggregateId $id) use ($adapter): \Generator
             {
                 $updateQuery = updateQuery(self::STREAMS_TABLE, ['closed_at' => \date('Y-m-d H:i:s')])
-                    ->where(equalsCriteria('id', $id))
+                    ->where(equalsCriteria('id', $id->toString()))
                     ->andWhere(equalsCriteria('identifier_class', \get_class($id)));
 
                 $compiledQuery = $updateQuery->compile();
@@ -183,12 +191,8 @@ final class SqlEventStreamStore implements EventStreamStore
                 /**
                  * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 *
-                 * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
-
-                unset($updateQuery, $compiledQuery, $resultSet);
+                yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
             },
             $id
         );
@@ -199,14 +203,16 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise
     {
+        $adapter = $this->adapter;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(AggregateId $id, int $toVersion, bool $force): \Generator
+            static function(AggregateId $id, int $toVersion, bool $force) use ($adapter): \Generator
             {
                 /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($this->adapter, $id);
+                $streamData = yield from self::doLoadStream($adapter, $id);
 
-                if (null === $streamData)
+                if(null === $streamData)
                 {
                     throw EventStreamDoesNotExist::create($id);
                 }
@@ -219,7 +225,7 @@ final class SqlEventStreamStore implements EventStreamStore
                  *
                  * @var \ServiceBus\Storage\Common\Transaction $transaction
                  */
-                $transaction = yield $this->adapter->transaction();
+                $transaction = yield $adapter->transaction();
 
                 try
                 {
@@ -232,17 +238,17 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch (UniqueConstraintViolationCheckFailed $exception)
+                catch(UniqueConstraintViolationCheckFailed $exception)
                 {
                     yield $transaction->rollback();
 
                     throw new EventStreamIntegrityCheckFailed(
-                        \sprintf('Error verifying the integrity of the events stream with ID "%s"', $id),
+                        \sprintf('Error verifying the integrity of the events stream with ID "%s"', $id->toString()),
                         (int) $exception->getCode(),
                         $exception
                     );
                 }
-                catch (\Throwable $throwable)
+                catch(\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -311,7 +317,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsCount = \count($eventsStream->storedAggregateEvents);
 
-        if (0 !== $eventsCount)
+        if(0 !== $eventsCount)
         {
             /**
              * @psalm-suppress TooManyTemplateParams Wrong Promise template
@@ -341,7 +347,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $selectQuery = selectQuery(self::STREAMS_TABLE)
-            ->where(equalsCriteria('id', $id))
+            ->where(equalsCriteria('id', $id->toString()))
             ->andWhere(equalsCriteria('identifier_class', \get_class($id)));
 
         /** @var \Latitude\QueryBuilder\Query $compiledQuery */
@@ -387,14 +393,15 @@ final class SqlEventStreamStore implements EventStreamStore
         string $streamId,
         int $fromVersion,
         ?int $toVersion
-    ): \Generator {
+    ): \Generator
+    {
         /** @var \Latitude\QueryBuilder\Query\SelectQuery $selectQuery */
         $selectQuery = selectQuery(self::STREAM_EVENTS_TABLE)
             ->where(field('stream_id')->eq($streamId))
             ->andWhere(field('playhead')->gte($fromVersion))
             ->andWhere(field('canceled_at')->isNull());
 
-        if (null !== $toVersion && $fromVersion < $toVersion)
+        if(null !== $toVersion && $fromVersion < $toVersion)
         {
             $selectQuery->andWhere(field('playhead')->lte($toVersion));
         }
@@ -479,6 +486,7 @@ final class SqlEventStreamStore implements EventStreamStore
             ->where(equalsCriteria('stream_id', $streamId))
             ->andWhere(field('playhead')->gt($toVersion));
 
+        /** @var \Latitude\QueryBuilder\Query $compiledQuery */
         $compiledQuery = $updateQuery->compile();
 
         /**
@@ -545,7 +553,8 @@ final class SqlEventStreamStore implements EventStreamStore
         DatabaseAdapter $adapter,
         array $streamData,
         ?array $streamEventsData
-    ): StoredAggregateEventStream {
+    ): StoredAggregateEventStream
+    {
         /** @psalm-var array{
          *     id:string,
          *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
@@ -581,7 +590,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $events = [];
 
-        if (true === \is_array($eventsData) && 0 !== \count($eventsData))
+        if(true === \is_array($eventsData) && 0 !== \count($eventsData))
         {
             /**
              * @psalm-var array{
@@ -593,13 +602,13 @@ final class SqlEventStreamStore implements EventStreamStore
              *   recorded_at:string
              * } $eventRow
              */
-            foreach ($eventsData as $eventRow)
+            foreach($eventsData as $eventRow)
             {
                 $playhead = (int) $eventRow['playhead'];
 
                 $payload = \base64_decode($decoder->unescapeBinary($eventRow['payload']));
 
-                if (true === \is_string($payload))
+                if(true === \is_string($payload))
                 {
                     $events[$playhead] = StoredAggregateEvent::restore(
                         $eventRow['id'],
@@ -657,9 +666,9 @@ final class SqlEventStreamStore implements EventStreamStore
         $rowSetIndex     = 0;
 
         /** @psalm-var array<int, string|int|float|null> $parameters */
-        foreach (self::prepareEventRows($eventsStream) as $parameters)
+        foreach(self::prepareEventRows($eventsStream) as $parameters)
         {
-            foreach ($parameters as $parameter)
+            foreach($parameters as $parameter)
             {
                 $queryParameters[$rowSetIndex] = $parameter;
 
@@ -683,7 +692,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsRows = [];
 
-        foreach ($eventsStream->storedAggregateEvents as $storedAggregateEvent)
+        foreach($eventsStream->storedAggregateEvents as $storedAggregateEvent)
         {
             /** @var StoredAggregateEvent $storedAggregateEvent */
             $row = [

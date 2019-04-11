@@ -70,7 +70,7 @@ final class AggregateClosed
         /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $idClass */
         $idClass = \get_class($id);
 
-        return new self((string) $id, $idClass, $aggregateClass);
+        return new self( $id->toString(), $idClass, $aggregateClass);
     }
 
     /**
