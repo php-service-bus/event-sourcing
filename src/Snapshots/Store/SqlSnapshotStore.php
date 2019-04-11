@@ -14,7 +14,6 @@ namespace ServiceBus\EventSourcing\Snapshots\Store;
 
 use function Amp\call;
 use function ServiceBus\Common\datetimeToString;
-use ServiceBus\Storage\Common\BinaryDataDecoder;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\find;
@@ -23,6 +22,7 @@ use function ServiceBus\Storage\Sql\remove;
 use Amp\Promise;
 use ServiceBus\EventSourcing\AggregateId;
 use ServiceBus\EventSourcing\Snapshots\Snapshot;
+use ServiceBus\Storage\Common\BinaryDataDecoder;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 
 /**
@@ -94,7 +94,7 @@ final class SqlSnapshotStore implements SnapshotStore
 
                 $criteria = [
                     equalsCriteria('id', $id->toString()),
-                    equalsCriteria('aggregate_id_class', \get_class($id))
+                    equalsCriteria('aggregate_id_class', \get_class($id)),
                 ];
 
                 /** @var \ServiceBus\Storage\Common\ResultSet $resultSet */
@@ -115,11 +115,11 @@ final class SqlSnapshotStore implements SnapshotStore
                  */
                 $data = yield fetchOne($resultSet);
 
-                if(true === \is_array($data) && 0 !== \count($data))
+                if (true === \is_array($data) && 0 !== \count($data))
                 {
                     $payload = $data['payload'];
 
-                    if($adapter instanceof BinaryDataDecoder)
+                    if ($adapter instanceof BinaryDataDecoder)
                     {
                         $payload = $adapter->unescapeBinary($payload);
                     }
@@ -150,7 +150,7 @@ final class SqlSnapshotStore implements SnapshotStore
             {
                 $criteria = [
                     equalsCriteria('id', $id->toString()),
-                    equalsCriteria('aggregate_id_class', \get_class($id))
+                    equalsCriteria('aggregate_id_class', \get_class($id)),
                 ];
 
                 yield remove($adapter, self::TABLE_NAME, $criteria);

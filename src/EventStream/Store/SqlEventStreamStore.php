@@ -78,7 +78,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch(\Throwable $throwable)
+                catch (\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -117,7 +117,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch(\Throwable $throwable)
+                catch (\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -150,7 +150,7 @@ final class SqlEventStreamStore implements EventStreamStore
                 /** @var array<string, string>|null $streamData */
                 $streamData = yield from self::doLoadStream($adapter, $id);
 
-                if(null !== $streamData)
+                if (null !== $streamData)
                 {
                     /** @var array<int, array>|null $streamEventsData */
                     $streamEventsData = yield from self::doLoadStreamEvents(
@@ -212,7 +212,7 @@ final class SqlEventStreamStore implements EventStreamStore
                 /** @var array<string, string>|null $streamData */
                 $streamData = yield from self::doLoadStream($adapter, $id);
 
-                if(null === $streamData)
+                if (null === $streamData)
                 {
                     throw EventStreamDoesNotExist::create($id);
                 }
@@ -238,7 +238,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                     yield $transaction->commit();
                 }
-                catch(UniqueConstraintViolationCheckFailed $exception)
+                catch (UniqueConstraintViolationCheckFailed $exception)
                 {
                     yield $transaction->rollback();
 
@@ -248,7 +248,7 @@ final class SqlEventStreamStore implements EventStreamStore
                         $exception
                     );
                 }
-                catch(\Throwable $throwable)
+                catch (\Throwable $throwable)
                 {
                     yield $transaction->rollback();
 
@@ -317,7 +317,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsCount = \count($eventsStream->storedAggregateEvents);
 
-        if(0 !== $eventsCount)
+        if (0 !== $eventsCount)
         {
             /**
              * @psalm-suppress TooManyTemplateParams Wrong Promise template
@@ -393,15 +393,14 @@ final class SqlEventStreamStore implements EventStreamStore
         string $streamId,
         int $fromVersion,
         ?int $toVersion
-    ): \Generator
-    {
+    ): \Generator {
         /** @var \Latitude\QueryBuilder\Query\SelectQuery $selectQuery */
         $selectQuery = selectQuery(self::STREAM_EVENTS_TABLE)
             ->where(field('stream_id')->eq($streamId))
             ->andWhere(field('playhead')->gte($fromVersion))
             ->andWhere(field('canceled_at')->isNull());
 
-        if(null !== $toVersion && $fromVersion < $toVersion)
+        if (null !== $toVersion && $fromVersion < $toVersion)
         {
             $selectQuery->andWhere(field('playhead')->lte($toVersion));
         }
@@ -553,8 +552,7 @@ final class SqlEventStreamStore implements EventStreamStore
         DatabaseAdapter $adapter,
         array $streamData,
         ?array $streamEventsData
-    ): StoredAggregateEventStream
-    {
+    ): StoredAggregateEventStream {
         /** @psalm-var array{
          *     id:string,
          *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
@@ -590,7 +588,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $events = [];
 
-        if(true === \is_array($eventsData) && 0 !== \count($eventsData))
+        if (true === \is_array($eventsData) && 0 !== \count($eventsData))
         {
             /**
              * @psalm-var array{
@@ -602,13 +600,13 @@ final class SqlEventStreamStore implements EventStreamStore
              *   recorded_at:string
              * } $eventRow
              */
-            foreach($eventsData as $eventRow)
+            foreach ($eventsData as $eventRow)
             {
                 $playhead = (int) $eventRow['playhead'];
 
                 $payload = \base64_decode($decoder->unescapeBinary($eventRow['payload']));
 
-                if(true === \is_string($payload))
+                if (true === \is_string($payload))
                 {
                     $events[$playhead] = StoredAggregateEvent::restore(
                         $eventRow['id'],
@@ -666,9 +664,9 @@ final class SqlEventStreamStore implements EventStreamStore
         $rowSetIndex     = 0;
 
         /** @psalm-var array<int, string|int|float|null> $parameters */
-        foreach(self::prepareEventRows($eventsStream) as $parameters)
+        foreach (self::prepareEventRows($eventsStream) as $parameters)
         {
-            foreach($parameters as $parameter)
+            foreach ($parameters as $parameter)
             {
                 $queryParameters[$rowSetIndex] = $parameter;
 
@@ -692,7 +690,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsRows = [];
 
-        foreach($eventsStream->storedAggregateEvents as $storedAggregateEvent)
+        foreach ($eventsStream->storedAggregateEvents as $storedAggregateEvent)
         {
             /** @var StoredAggregateEvent $storedAggregateEvent */
             $row = [

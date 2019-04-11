@@ -340,10 +340,13 @@ abstract class Aggregate
     {
         $eventListenerMethodNameParts = \explode('\\', \get_class($event));
 
+        /** @var string $latestPart */
+        $latestPart =  \end($eventListenerMethodNameParts);
+
         return \sprintf(
             '%s%s',
             self::EVENT_APPLY_PREFIX,
-            \end($eventListenerMethodNameParts)
+            $latestPart
         );
     }
 

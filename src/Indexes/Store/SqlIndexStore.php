@@ -59,10 +59,10 @@ final class SqlIndexStore implements IndexStore
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
-                    equalsCriteria('value_key', $indexKey->valueKey)
+                    equalsCriteria('value_key', $indexKey->valueKey),
                 ];
 
-                /** @var @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
+                /** @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
                 $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
 
                 /**
@@ -72,9 +72,7 @@ final class SqlIndexStore implements IndexStore
                  */
                 $result = yield fetchOne($resultSet);
 
-                unset($selectQuery, $compiledQuery, $resultSet);
-
-                if(null !== $result && true === \is_array($result))
+                if (null !== $result && true === \is_array($result))
                 {
                     return IndexValue::create($result['value_data']);
                 }
@@ -133,7 +131,7 @@ final class SqlIndexStore implements IndexStore
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
-                    equalsCriteria('value_key', $indexKey->valueKey)
+                    equalsCriteria('value_key', $indexKey->valueKey),
                 ];
 
                 yield remove($adapter, self::TABLE_NAME, $criteria);

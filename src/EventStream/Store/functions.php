@@ -126,7 +126,7 @@ function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregat
 function streamToStoredRepresentation(EventSerializer $serializer, AggregateEventStream $aggregateEvent): StoredAggregateEventStream
 {
     $preparedEvents = \array_map(
-       static function(AggregateEvent $aggregateEvent) use ($serializer): StoredAggregateEvent
+        static function(AggregateEvent $aggregateEvent) use ($serializer): StoredAggregateEvent
         {
             return eventToStoredRepresentation($serializer, $aggregateEvent);
         },
