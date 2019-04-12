@@ -115,18 +115,18 @@ final class SqlSnapshotStore implements SnapshotStore
                  */
                 $data = yield fetchOne($resultSet);
 
-                if(true === \is_array($data) && 0 !== \count($data))
+                if (true === \is_array($data) && 0 !== \count($data))
                 {
                     $payload = $data['payload'];
 
-                    if($adapter instanceof BinaryDataDecoder)
+                    if ($adapter instanceof BinaryDataDecoder)
                     {
                         $payload = $adapter->unescapeBinary($payload);
                     }
 
                     $snapshotContent = (string) \base64_decode($payload);
 
-                    if('' !== $snapshotContent)
+                    if ('' !== $snapshotContent)
                     {
                         /** @var Snapshot $storedSnapshot */
                         $storedSnapshot = \unserialize($snapshotContent, ['allowed_classes' => true]);
