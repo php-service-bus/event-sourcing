@@ -60,10 +60,10 @@ final class SqlEventStreamStore implements EventStreamStore
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise
     {
         return $this->adapter->transactional(
-            static function(Transaction $transaction) use ($aggregateEventStream): \Generator
+            static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
-                yield from self::doSaveStream($transaction, $aggregateEventStream);
-                yield from self::doSaveEvents($transaction, $aggregateEventStream);
+                yield from self::doSaveStream($queryExecutor, $aggregateEventStream);
+                yield from self::doSaveEvents($queryExecutor, $aggregateEventStream);
             }
         );
     }
@@ -74,9 +74,9 @@ final class SqlEventStreamStore implements EventStreamStore
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise
     {
         return $this->adapter->transactional(
-            static function(Transaction $transaction) use ($aggregateEventStream): \Generator
+            static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
-                yield from self::doSaveEvents($transaction, $aggregateEventStream);
+                yield from self::doSaveEvents($queryExecutor, $aggregateEventStream);
             }
         );
     }
@@ -172,14 +172,14 @@ final class SqlEventStreamStore implements EventStreamStore
                 try
                 {
                     yield $adapter->transactional(
-                        static function(Transaction $transaction) use ($force, $streamId, $toVersion): \Generator
+                        static function(QueryExecutor $queryExecutor) use ($force, $streamId, $toVersion): \Generator
                         {
                             true === $force
-                                ? yield from self::doDeleteTailEvents($transaction, $streamId, $toVersion)
-                                : yield from self::doSkipEvents($transaction, $streamId, $toVersion);
+                                ? yield from self::doDeleteTailEvents($queryExecutor, $streamId, $toVersion)
+                                : yield from self::doSkipEvents($queryExecutor, $streamId, $toVersion);
 
                             /** restore soft deleted events */
-                            yield from self::doRestoreEvents($transaction, $streamId, $toVersion);
+                            yield from self::doRestoreEvents($queryExecutor, $streamId, $toVersion);
                         }
                     );
                 }
