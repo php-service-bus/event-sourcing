@@ -30,7 +30,6 @@ use ServiceBus\Storage\Common\BinaryDataDecoder;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\QueryExecutor;
-use ServiceBus\Storage\Common\Transaction;
 
 /**
  *
