@@ -15,6 +15,7 @@ namespace ServiceBus\EventSourcing\Tests\EventStream\Serializer;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed;
+use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
 
 /**
  *
@@ -33,7 +34,9 @@ final class DefaultEventSerializerTest extends TestCase
         $this->expectException(SerializeEventFailed::class);
         $this->expectExceptionMessage('JSON unserialize failed: Syntax error');
 
-        $serializer = new DefaultEventSerializer();
+        $serializer = new DefaultEventSerializer(
+            new SymfonyMessageSerializer()
+        );
 
         $serializer->unserialize('', 'qwerty');
     }

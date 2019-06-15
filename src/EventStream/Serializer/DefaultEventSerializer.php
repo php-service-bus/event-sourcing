@@ -25,9 +25,12 @@ final class DefaultEventSerializer implements EventSerializer
      */
     private $serializer;
 
-    public function __construct()
+    /**
+     * @param SymfonyMessageSerializer $serializer
+     */
+    public function __construct(SymfonyMessageSerializer $serializer)
     {
-        $this->serializer = new SymfonyMessageSerializer();
+        $this->serializer = $serializer;
     }
 
     /**

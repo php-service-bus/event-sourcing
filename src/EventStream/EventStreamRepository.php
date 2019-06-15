@@ -20,7 +20,6 @@ use function ServiceBus\EventSourcing\EventStream\Store\streamToStoredRepresenta
 use Amp\Promise;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\AggregateId;
-use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream;
@@ -34,7 +33,7 @@ final class EventStreamRepository
 {
     public const REVERT_MODE_SOFT_DELETE = 1;
 
-    public const REVERT_MODE_DELETE      = 2;
+    public const REVERT_MODE_DELETE = 2;
 
     /**
      * @var EventStreamStore
@@ -52,15 +51,15 @@ final class EventStreamRepository
     private $snapshotter;
 
     /**
-     * @param EventStreamStore     $store
-     * @param Snapshotter          $snapshotter
-     * @param EventSerializer|null $serializer
+     * @param EventStreamStore $store
+     * @param Snapshotter      $snapshotter
+     * @param EventSerializer  $serializer
      */
-    public function __construct(EventStreamStore $store, Snapshotter $snapshotter, ?EventSerializer $serializer = null)
+    public function __construct(EventStreamStore $store, Snapshotter $snapshotter, EventSerializer $serializer)
     {
         $this->store       = $store;
         $this->snapshotter = $snapshotter;
-        $this->serializer  = $serializer ?? new DefaultEventSerializer();
+        $this->serializer  = $serializer;
     }
 
     /**

@@ -21,6 +21,7 @@ use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
 use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist;
 use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed;
+use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
@@ -29,6 +30,7 @@ use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
+use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\StorageConfiguration;
@@ -125,7 +127,13 @@ final class EventStreamRepositoryTest extends TestCase
         $this->eventStore            = new SqlEventStreamStore(self::$adapter);
         $this->snapshotStore         = new SqlSnapshotStore(self::$adapter);
         $this->snapshotter           = new Snapshotter($this->snapshotStore, new SnapshotVersionTrigger(1));
-        $this->eventStreamRepository = new EventStreamRepository($this->eventStore, $this->snapshotter);
+        $this->eventStreamRepository = new EventStreamRepository(
+            $this->eventStore,
+            $this->snapshotter,
+            new DefaultEventSerializer(
+                new SymfonyMessageSerializer()
+            )
+        );
     }
 
     /**
@@ -250,6 +258,9 @@ final class EventStreamRepositoryTest extends TestCase
             new Snapshotter(
                 $this->snapshotStore,
                 new SnapshotVersionTrigger(100500)
+            ),
+            new DefaultEventSerializer(
+                new SymfonyMessageSerializer()
             )
         );
 
