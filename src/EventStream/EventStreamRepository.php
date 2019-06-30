@@ -18,6 +18,8 @@ use function ServiceBus\Common\invokeReflectionMethod;
 use function ServiceBus\EventSourcing\EventStream\Store\streamToDomainRepresentation;
 use function ServiceBus\EventSourcing\EventStream\Store\streamToStoredRepresentation;
 use Amp\Promise;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\AggregateId;
 use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
@@ -27,7 +29,7 @@ use ServiceBus\EventSourcing\Snapshots\Snapshot;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 
 /**
- *
+ * Repository for working with event streams.
  */
 final class EventStreamRepository
 {
@@ -51,15 +53,26 @@ final class EventStreamRepository
     private $snapshotter;
 
     /**
-     * @param EventStreamStore $store
-     * @param Snapshotter      $snapshotter
-     * @param EventSerializer  $serializer
+     * @var LoggerInterface
      */
-    public function __construct(EventStreamStore $store, Snapshotter $snapshotter, EventSerializer $serializer)
-    {
+    private $logger;
+
+    /**
+     * @param EventStreamStore     $store
+     * @param Snapshotter          $snapshotter
+     * @param EventSerializer      $serializer
+     * @param LoggerInterface|null $logger
+     */
+    public function __construct(
+        EventStreamStore $store,
+        Snapshotter $snapshotter,
+        EventSerializer $serializer,
+        ?LoggerInterface $logger = null
+    ) {
         $this->store       = $store;
         $this->snapshotter = $snapshotter;
         $this->serializer  = $serializer;
+        $this->logger      = $logger ?? new NullLogger();
     }
 
     /**
@@ -69,34 +82,78 @@ final class EventStreamRepository
      *
      * @param AggregateId $id
      *
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
+     * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
+     * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
      * @return Promise<\ServiceBus\EventSourcing\Aggregate|null>
      */
     public function load(AggregateId $id): Promise
     {
+        $store      = $this->store;
+        $serializer = $this->serializer;
+        $snaphotter = $this->snapshotter;
+        $logger     = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(AggregateId $id): \Generator
+            static function(AggregateId $id) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
-                $aggregate         = null;
-                $fromStreamVersion = Aggregate::START_PLAYHEAD_INDEX;
+                $idValue = $id->toString();
+                $idClass = \get_class($id);
 
-                /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
-                $loadedSnapshot = yield $this->snapshotter->load($id);
+                $logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}"', [
+                    'aggregateIdClass' => $idClass,
+                    'aggregateId'      => $idValue,
+                ]);
 
-                if (null !== $loadedSnapshot)
+                try
                 {
-                    $aggregate         = $loadedSnapshot->aggregate;
-                    $fromStreamVersion = $aggregate->version() + 1;
+                    $aggregate         = null;
+                    $fromStreamVersion = Aggregate::START_PLAYHEAD_INDEX;
+
+                    /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
+                    $loadedSnapshot = yield $snaphotter->load($id);
+
+                    if (null !== $loadedSnapshot)
+                    {
+                        $aggregate         = $loadedSnapshot->aggregate;
+                        $fromStreamVersion = $aggregate->version() + 1;
+
+                        $logger->debug(
+                            'Found a snapshot of the state of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}" on version "{aggregateVersion}"',
+                            [
+                                'aggregateIdClass' => $idClass,
+                                'aggregateId'      => $idValue,
+                                'aggregateVersion' => $aggregate->version(),
+                            ]
+                        );
+                    }
+
+                    /** @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null $storedEventStream */
+                    $storedEventStream = yield $store->load($id, $fromStreamVersion);
+
+                    $aggregate = self::restoreStream($serializer, $aggregate, $storedEventStream);
+
+                    return $aggregate;
                 }
+                catch (\Throwable $throwable)
+                {
+                    $logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}" failed', [
+                        'aggregateIdClass' => $idClass,
+                        'aggregateId'      => $idValue,
+                        'throwableMessage' => $throwable->getMessage(),
+                        'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                    ]);
 
-                /** @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null $storedEventStream */
-                $storedEventStream = yield $this->store->load($id, $fromStreamVersion);
-
-                $aggregate = $this->restoreStream($aggregate, $storedEventStream);
-
-                unset($storedEventStream, $loadedSnapshot, $fromStreamVersion);
-
-                return $aggregate;
+                    throw $throwable;
+                }
+                finally
+                {
+                    unset($storedEventStream, $loadedSnapshot, $fromStreamVersion);
+                }
             },
             $id
         );
@@ -109,22 +166,58 @@ final class EventStreamRepository
      *
      * @param Aggregate $aggregate
      *
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
+     * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
+     * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
      * @return Promise<array<int, object>>
      */
     public function save(Aggregate $aggregate): Promise
     {
+        $store      = $this->store;
+        $serializer = $this->serializer;
+        $snaphotter = $this->snapshotter;
+        $logger     = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(Aggregate $aggregate): \Generator
+            static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
-                /**
-                 * @psalm-var array<int, object> $raisedEvents
-                 *
-                 * @var object[] $raisedEvents
-                 */
-                $raisedEvents = yield from $this->doStore($aggregate, true);
+                $id = $aggregate->id();
 
-                return $raisedEvents;
+                $idValue = $id->toString();
+                $idClass = \get_class($id);
+
+                $logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}"', [
+                    'aggregateIdClass' => $idClass,
+                    'aggregateId'      => $idValue,
+                ]);
+
+                try
+                {
+                    /**
+                     * @psalm-var array<int, object> $raisedEvents
+                     *
+                     * @var object[] $raisedEvents
+                     */
+                    $raisedEvents = yield from self::doStore($serializer, $store, $snaphotter, $aggregate, true);
+
+                    return $raisedEvents;
+                }
+                catch (\Throwable $throwable)
+                {
+                    $logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}" failed', [
+                        'aggregateIdClass' => $idClass,
+                        'aggregateId'      => $idValue,
+                        'throwableMessage' => $throwable->getMessage(),
+                        'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                    ]);
+
+                    throw $throwable;
+                }
             },
             $aggregate
         );
@@ -137,22 +230,57 @@ final class EventStreamRepository
      *
      * @param Aggregate $aggregate
      *
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
+     * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
+     * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
      * @return Promise<array<int, object>>
      */
     public function update(Aggregate $aggregate): Promise
     {
+        $store      = $this->store;
+        $serializer = $this->serializer;
+        $snaphotter = $this->snapshotter;
+        $logger     = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(Aggregate $aggregate): \Generator
+            static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
-                /**
-                 * @psalm-var array<int, object> $raisedEvents
-                 *
-                 * @var object[] $raisedEvents
-                 */
-                $raisedEvents = yield from $this->doStore($aggregate, false);
+                $id = $aggregate->id();
 
-                return $raisedEvents;
+                $idValue = $id->toString();
+                $idClass = \get_class($id);
+
+                $logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}"', [
+                    'aggregateIdClass' => $idClass,
+                    'aggregateId'      => $idValue,
+                ]);
+
+                try
+                {
+                    /**
+                     * @psalm-var array<int, object> $raisedEvents
+                     *
+                     * @var object[] $raisedEvents
+                     */
+                    $raisedEvents = yield from self::doStore($serializer, $store, $snaphotter, $aggregate, false);
+
+                    return $raisedEvents;
+                }
+                catch (\Throwable $throwable)
+                {
+                    $logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}', [
+                        'aggregateIdClass' => $idClass,
+                        'aggregateId'      => $idValue,
+                        'throwableMessage' => $throwable->getMessage(),
+                        'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                    ]);
+
+                    throw $throwable;
+                }
             },
             $aggregate
         );
@@ -172,29 +300,65 @@ final class EventStreamRepository
      * @param int       $toVersion
      * @param int       $mode
      *
+     * @throws \ServiceBus\Common\Exceptions\DateTimeException
+     * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
+     * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
+     * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
      * @return Promise<\ServiceBus\EventSourcing\Aggregate>
      */
     public function revert(Aggregate $aggregate, int $toVersion, int $mode = self::REVERT_MODE_SOFT_DELETE): Promise
     {
+        $store      = $this->store;
+        $serializer = $this->serializer;
+        $snaphotter = $this->snapshotter;
+        $logger     = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(Aggregate $aggregate, int $toVersion, int $mode): \Generator
+            static function(Aggregate $aggregate, int $toVersion, int $mode) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
-                yield $this->store->revert(
-                    $aggregate->id(),
-                    $toVersion,
-                    self::REVERT_MODE_DELETE === $mode
-                );
+                $id = $aggregate->id();
 
-                /** @var StoredAggregateEventStream|null $storedEventStream */
-                $storedEventStream = yield $this->store->load($aggregate->id());
+                $idValue = $id->toString();
+                $idClass = \get_class($id);
 
-                /** @var Aggregate $aggregate */
-                $aggregate = $this->restoreStream(null, $storedEventStream);
+                $logger->debug('Rollback of aggregate with identifier "{aggregateIdClass}:{aggregateId}" to version "{aggregateVersion}"', [
+                    'aggregateIdClass' => $idClass,
+                    'aggregateId'      => $idValue,
+                    'aggregateVersion' => $toVersion,
+                ]);
 
-                yield $this->snapshotter->store(Snapshot::create($aggregate, $aggregate->version()));
+                try
+                {
+                    yield $store->revert($aggregate->id(), $toVersion, self::REVERT_MODE_DELETE === $mode);
 
-                return $aggregate;
+                    /** @var StoredAggregateEventStream|null $storedEventStream */
+                    $storedEventStream = yield $store->load($aggregate->id());
+
+                    /** @var Aggregate $aggregate */
+                    $aggregate = self::restoreStream($serializer, null, $storedEventStream);
+
+                    yield $snaphotter->store(Snapshot::create($aggregate, $aggregate->version()));
+
+                    return $aggregate;
+                }
+                catch (\Throwable $throwable)
+                {
+                    $logger->debug('Error when rolling back the version of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}', [
+                        'aggregateIdClass' => $idClass,
+                        'aggregateId'      => $idValue,
+                        'throwableMessage' => $throwable->getMessage(),
+                        'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                    ]);
+
+                    throw $throwable;
+                }
+                finally
+                {
+                    unset($storedEventStream);
+                }
             },
             $aggregate,
             $toVersion,
@@ -203,8 +367,11 @@ final class EventStreamRepository
     }
 
     /**
-     * @param Aggregate $aggregate
-     * @param bool      $isNew
+     * @param EventSerializer  $eventSerializer
+     * @param EventStreamStore $eventStreamStore
+     * @param Snapshotter      $snapshotter
+     * @param Aggregate        $aggregate
+     * @param bool             $isNew
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -215,26 +382,31 @@ final class EventStreamRepository
      *
      * @return \Generator
      */
-    private function doStore(Aggregate $aggregate, bool $isNew): \Generator
-    {
+    private static function doStore(
+        EventSerializer $eventSerializer,
+        EventStreamStore $eventStreamStore,
+        Snapshotter $snapshotter,
+        Aggregate $aggregate,
+        bool $isNew
+    ): \Generator {
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $eventStream */
         $eventStream    = invokeReflectionMethod($aggregate, 'makeStream');
         $receivedEvents = $eventStream->originEvents;
 
-        $storedEventStream = streamToStoredRepresentation($this->serializer, $eventStream);
+        $storedEventStream = streamToStoredRepresentation($eventSerializer, $eventStream);
 
         $promise = true === $isNew
-            ? $this->store->save($storedEventStream)
-            : $this->store->append($storedEventStream);
+            ? $eventStreamStore->save($storedEventStream)
+            : $eventStreamStore->append($storedEventStream);
 
         yield $promise;
 
         /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
-        $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
+        $loadedSnapshot = yield $snapshotter->load($aggregate->id());
 
-        if (true === $this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
+        if (true === $snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
         {
-            yield $this->snapshotter->store(Snapshot::create($aggregate, $aggregate->version()));
+            yield $snapshotter->store(Snapshot::create($aggregate, $aggregate->version()));
         }
 
         unset($eventStream, $loadedSnapshot, $storedEventStream);
@@ -245,6 +417,7 @@ final class EventStreamRepository
     /**
      * Restore the aggregate from the event stream/Add missing events to the aggregate from the snapshot.
      *
+     * @param EventSerializer                 $eventSerializer
      * @param Aggregate|null                  $aggregate
      * @param StoredAggregateEventStream|null $storedEventStream
      *
@@ -254,19 +427,25 @@ final class EventStreamRepository
      *
      * @return Aggregate|null
      */
-    private function restoreStream(?Aggregate $aggregate, ?StoredAggregateEventStream $storedEventStream): ?Aggregate
-    {
+    private static function restoreStream(
+        EventSerializer $eventSerializer,
+        ?Aggregate $aggregate,
+        ?StoredAggregateEventStream $storedEventStream
+    ): ?Aggregate {
         if (null === $storedEventStream)
         {
             return null;
         }
 
-        $eventStream = streamToDomainRepresentation($this->serializer, $storedEventStream);
+        $eventStream = streamToDomainRepresentation($eventSerializer, $storedEventStream);
 
         if (null === $aggregate)
         {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            /** @var Aggregate $aggregate */
+            /**
+             * @noinspection CallableParameterUseCaseInTypeContextInspection
+             *
+             * @var Aggregate $aggregate
+             */
             $aggregate = createWithoutConstructor($storedEventStream->aggregateClass);
         }
 

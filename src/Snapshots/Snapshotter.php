@@ -73,20 +73,31 @@ final class Snapshotter
      */
     public function load(AggregateId $id): Promise
     {
+        $store  = $this->store;
+        $logger = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(AggregateId $id): \Generator
+            static function(AggregateId $id) use ($store, $logger): \Generator
             {
                 $snapshot = null;
 
                 try
                 {
                     /** @var Snapshot|null $snapshot */
-                    $snapshot = yield $this->store->load($id);
+                    $snapshot = yield $store->load($id);
                 }
                 catch (\Throwable $throwable)
                 {
-                    $this->logger->error($throwable->getMessage(), ['e' => $throwable]);
+                    $logger->error(
+                        'Error loading snapshot of aggregate with identifier "{aggregateIdClass}:{aggregateId}"',
+                        [
+                            'aggregateIdClass' => \get_class($id),
+                            'aggregateId'      => $id->toString(),
+                            'throwableMessage' => $throwable->getMessage(),
+                            'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                        ]
+                    );
                 }
 
                 return $snapshot;
@@ -104,18 +115,35 @@ final class Snapshotter
      */
     public function store(Snapshot $snapshot): Promise
     {
+        $store  = $this->store;
+        $logger = $this->logger;
+
         /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function(Snapshot $snapshot): \Generator
+            static function(Snapshot $snapshot) use ($store, $logger): \Generator
             {
+                $id = $snapshot->aggregate->id();
+
                 try
                 {
-                    yield $this->store->remove($snapshot->aggregate->id());
-                    yield $this->store->save($snapshot);
+                    yield $store->remove($id);
+                    yield $store->save($snapshot);
                 }
                 catch (\Throwable $throwable)
                 {
-                    $this->logger->error($throwable->getMessage(), ['e' => $throwable]);
+                    $logger->error(
+                        'Error saving snapshot of aggregate with identifier "{aggregateIdClass}:{aggregateId}"',
+                        [
+                            'aggregateIdClass' => \get_class($id),
+                            'aggregateId'      => $id->toString(),
+                            'throwableMessage' => $throwable->getMessage(),
+                            'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
+                        ]
+                    );
+                }
+                finally
+                {
+                    unset($id);
                 }
             },
             $snapshot
