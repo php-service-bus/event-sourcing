@@ -67,10 +67,7 @@ final class SqlSnapshotStore implements SnapshotStore
 
                 $compiledQuery = $insertQuery->compile();
 
-                /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 */
+                /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
                 yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
             },
             $snapshot
@@ -101,7 +98,6 @@ final class SqlSnapshotStore implements SnapshotStore
                 $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
 
                 /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  * @psalm-var      array{
                  *   id: string,
                  *   aggregate_id_class: string,

@@ -136,10 +136,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 $compiledQuery = $updateQuery->compile();
 
-                /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 */
+                /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
                 yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
             },
             $id
@@ -222,7 +219,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $insertQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -251,10 +247,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
         if (0 !== $eventsCount)
         {
-            /**
-             * @psalm-suppress TooManyTemplateParams Wrong Promise template
-             * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-             */
+            /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
             yield $queryExecutor->execute(
                 self::createSaveEventQueryString($eventsCount),
                 self::collectSaveEventQueryParameters($eventsStream)
@@ -286,7 +279,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $selectQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -295,7 +287,6 @@ final class SqlEventStreamStore implements EventStreamStore
             yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-var      array<string, string>|null $data
          *
          * @var array $data
@@ -341,7 +332,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $selectQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -349,7 +339,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-var      array<int, array>|null $result
          *
          * @var array $result
@@ -384,7 +373,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $deleteQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -421,7 +409,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $updateQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -456,7 +443,6 @@ final class SqlEventStreamStore implements EventStreamStore
         $compiledQuery = $updateQuery->compile();
 
         /**
-         * @psalm-suppress TooManyTemplateParams Wrong Promise template
          * @psalm-suppress MixedTypeCoercion Invalid params() docblock
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet

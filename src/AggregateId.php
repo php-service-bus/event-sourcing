@@ -60,14 +60,4 @@ abstract class AggregateId
     {
         return $this->id;
     }
-
-    /**
-     * @deprecated
-     *
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->id;
-    }
 }

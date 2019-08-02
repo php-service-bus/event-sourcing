@@ -65,11 +65,7 @@ final class SqlIndexStore implements IndexStore
                 /** @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
                 $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
 
-                /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
-                 *
-                 * @var array<string, mixed>|null $result
-                 */
+                /** @var array<string, mixed>|null $result */
                 $result = yield fetchOne($resultSet);
 
                 if (null !== $result && true === \is_array($result))
@@ -104,7 +100,6 @@ final class SqlIndexStore implements IndexStore
                 $compiledQuery = $insertQuery->compile();
 
                 /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  * @psalm-suppress MixedTypeCoercion Invalid params() docblock
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
@@ -160,7 +155,6 @@ final class SqlIndexStore implements IndexStore
                 $compiledQuery = $updateQuery->compile();
 
                 /**
-                 * @psalm-suppress TooManyTemplateParams Wrong Promise template
                  * @psalm-suppress MixedTypeCoercion Invalid params() docblock
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
