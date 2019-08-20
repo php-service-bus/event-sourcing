@@ -57,7 +57,7 @@ final class SqlSnapshotStore implements SnapshotStore
             static function(Snapshot $snapshot) use ($adapter): \Generator
             {
                 $insertQuery = insertQuery(self::TABLE_NAME, [
-                    'id'                 => $snapshot->aggregate->id(),
+                    'id'                 => $snapshot->aggregate->id()->toString(),
                     'aggregate_id_class' => \get_class($snapshot->aggregate->id()),
                     'aggregate_class'    => \get_class($snapshot->aggregate),
                     'version'            => $snapshot->aggregate->version(),
