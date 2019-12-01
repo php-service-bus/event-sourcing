@@ -22,19 +22,14 @@ use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
 /**
  * @internal
  *
- * @param EventSerializer            $serializer
- * @param StoredAggregateEventStream $storedAggregateEventsStream
- *
  * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
- *
- * @return AggregateEventStream
  */
 function streamToDomainRepresentation(EventSerializer $serializer, StoredAggregateEventStream $storedAggregateEventsStream): AggregateEventStream
 {
     $events = [];
 
-    foreach ($storedAggregateEventsStream->storedAggregateEvents as $storedAggregateEvent)
+    foreach($storedAggregateEventsStream->storedAggregateEvents as $storedAggregateEvent)
     {
         $events[] = eventToDomainRepresentation($serializer, $storedAggregateEvent);
     }
@@ -50,7 +45,7 @@ function streamToDomainRepresentation(EventSerializer $serializer, StoredAggrega
     /** @var AggregateId $id */
     $id = new $idClass($storedAggregateEventsStream->aggregateId);
 
-    return AggregateEventStream::create(
+    return new AggregateEventStream(
         $id,
         $storedAggregateEventsStream->aggregateClass,
         $events,
@@ -62,13 +57,8 @@ function streamToDomainRepresentation(EventSerializer $serializer, StoredAggrega
 /**
  * @internal
  *
- * @param EventSerializer $serializer
- * @param AggregateEvent  $aggregateEvent
- *
  * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
- *
- * @return StoredAggregateEvent
  */
 function eventToStoredRepresentation(EventSerializer $serializer, AggregateEvent $aggregateEvent): StoredAggregateEvent
 {
@@ -87,13 +77,8 @@ function eventToStoredRepresentation(EventSerializer $serializer, AggregateEvent
 /**
  * @internal
  *
- * @param EventSerializer      $serializer
- * @param StoredAggregateEvent $storedAggregateEvent
- *
  * @throws \ServiceBus\Common\Exceptions\DateTimeException
  * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
- *
- * @return AggregateEvent
  */
 function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregateEvent $storedAggregateEvent): AggregateEvent
 {
@@ -116,14 +101,12 @@ function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregat
 }
 
 /**
- * @param EventSerializer      $serializer
- * @param AggregateEventStream $aggregateEvent
- *
  * @throws \ServiceBus\Common\Exceptions\DateTimeException
- *
- * @return StoredAggregateEventStream
  */
-function streamToStoredRepresentation(EventSerializer $serializer, AggregateEventStream $aggregateEvent): StoredAggregateEventStream
+function streamToStoredRepresentation(
+    EventSerializer $serializer,
+    AggregateEventStream $aggregateEvent
+): StoredAggregateEventStream
 {
     $preparedEvents = \array_map(
         static function(AggregateEvent $aggregateEvent) use ($serializer): StoredAggregateEvent
@@ -139,7 +122,7 @@ function streamToStoredRepresentation(EventSerializer $serializer, AggregateEven
      */
     $eventClass = \get_class($aggregateEvent->id);
 
-    return StoredAggregateEventStream::create(
+    return new StoredAggregateEventStream(
         $aggregateEvent->id->toString(),
         $eventClass,
         $aggregateEvent->aggregateClass,

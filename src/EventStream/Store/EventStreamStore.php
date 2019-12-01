@@ -24,8 +24,6 @@ interface EventStreamStore
     /**
      * Save new event stream.
      *
-     * @param StoredAggregateEventStream $aggregateEventStream
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -38,8 +36,6 @@ interface EventStreamStore
     /**
      * Append events to exists stream.
      *
-     * @param StoredAggregateEventStream $aggregateEventStream
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -50,10 +46,6 @@ interface EventStreamStore
 
     /**
      * Load event stream.
-     *
-     * @param AggregateId $id
-     * @param int         $fromVersion
-     * @param int|null    $toVersion
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
@@ -71,8 +63,6 @@ interface EventStreamStore
     /**
      * Marks stream closed.
      *
-     * @param AggregateId $id
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -83,10 +73,6 @@ interface EventStreamStore
 
     /**
      * Roll back all changes to specified version.
-     *
-     * @param AggregateId $id
-     * @param int         $toVersion
-     * @param bool        $force Delete all events after the specified version
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed

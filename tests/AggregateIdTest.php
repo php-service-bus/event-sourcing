@@ -25,8 +25,6 @@ final class AggregateIdTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function createWithEmptyId(): void
     {

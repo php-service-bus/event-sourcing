@@ -26,8 +26,6 @@ final class DefaultEventSerializerTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function unserializeWrongMessageType(): void
     {

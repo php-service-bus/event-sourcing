@@ -32,14 +32,8 @@ final class SqlSnapshotStore implements SnapshotStore
 {
     private const TABLE_NAME = 'event_store_snapshots';
 
-    /**
-     * @var DatabaseAdapter
-     */
-    private $adapter;
+    private DatabaseAdapter $adapter;
 
-    /**
-     * @param DatabaseAdapter $adapter
-     */
     public function __construct(DatabaseAdapter $adapter)
     {
         $this->adapter = $adapter;
@@ -52,7 +46,6 @@ final class SqlSnapshotStore implements SnapshotStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(Snapshot $snapshot) use ($adapter): \Generator
             {
@@ -83,7 +76,6 @@ final class SqlSnapshotStore implements SnapshotStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(AggregateId $id) use ($adapter): \Generator
             {
@@ -142,7 +134,6 @@ final class SqlSnapshotStore implements SnapshotStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(AggregateId $id) use ($adapter): \Generator
             {

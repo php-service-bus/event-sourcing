@@ -17,22 +17,13 @@ namespace ServiceBus\EventSourcing\Tests\stubs;
  */
 final class FirstEventWithKey
 {
-    /**
-     * @var string
-     */
-    private $key;
+    private string $key;
 
-    /**
-     * @param string $key
-     */
     public function __construct(string $key)
     {
         $this->key = $key;
     }
 
-    /**
-     * @return string
-     */
     public function key(): string
     {
         return $this->key;

@@ -17,11 +17,6 @@ namespace ServiceBus\EventSourcing\EventStream\Serializer\Exceptions;
  */
 final class SerializeEventFailed extends \RuntimeException
 {
-    /**
-     * @param \Throwable $throwable
-     *
-     * @return self
-     */
     public static function fromThrowable(\Throwable $throwable): self
     {
         return new self($throwable->getMessage(), (int) $throwable->getCode(), $throwable);

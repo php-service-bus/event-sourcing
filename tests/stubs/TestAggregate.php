@@ -19,23 +19,12 @@ use ServiceBus\EventSourcing\Aggregate;
  */
 final class TestAggregate extends Aggregate
 {
-    /**
-     * @var string|null
-     */
-    private $firstValue;
+    private ?string $firstValue = null;
+
+    private ?string $secondValue = null;
 
     /**
-     * @var string|null
-     */
-    private $secondValue;
-
-    /**
-     * @param string $value
-     *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
-     *
-     * @return void
-     *
      */
     public function firstAction(string $value): void
     {
@@ -43,29 +32,18 @@ final class TestAggregate extends Aggregate
     }
 
     /**
-     * @param string $value
-     *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
-     *
-     * @return void
-     *
      */
     public function secondAction(string $value): void
     {
         $this->raise(new SecondEventWithKey($value));
     }
 
-    /**
-     * @return string|null
-     */
     public function firstValue(): ?string
     {
         return $this->firstValue;
     }
 
-    /**
-     * @return string|null
-     */
     public function secondValue(): ?string
     {
         return $this->secondValue;
@@ -73,10 +51,6 @@ final class TestAggregate extends Aggregate
 
     /**
      * @noinspection PhpUnusedPrivateMethodInspection
-     *
-     * @param SecondEventWithKey $event
-     *
-     * @return void
      */
     private function onSecondEventWithKey(SecondEventWithKey $event): void
     {
@@ -85,10 +59,6 @@ final class TestAggregate extends Aggregate
 
     /**
      * @noinspection PhpUnusedPrivateMethodInspection
-     *
-     * @param FirstEventWithKey $event
-     *
-     * @return void
      */
     private function onFirstEventWithKey(FirstEventWithKey $event): void
     {

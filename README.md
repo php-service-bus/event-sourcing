@@ -1,7 +1,7 @@
 ## What is it?
-[![Build Status](https://travis-ci.org/php-service-bus/event-sourcing.svg?branch=v3.3)](https://travis-ci.org/php-service-bus/event-sourcing)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/badges/quality-score.png?b=v3.3)](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/?branch=v3.3)
-[![Code Coverage](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/badges/coverage.png?b=v3.3)](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/?branch=v3.3)
+[![Build Status](https://travis-ci.org/php-service-bus/event-sourcing.svg?branch=v4.0)](https://travis-ci.org/php-service-bus/event-sourcing)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/badges/quality-score.png?b=v4.0)](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/?branch=v4.0)
+[![Code Coverage](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/badges/coverage.png?b=v4.0)](https://scrutinizer-ci.com/g/php-service-bus/event-sourcing/?branch=v4.0)
 
 This component is part of the [PHP Service Bus](https://github.com/php-service-bus/service-bus): simple Event Sourcing implementation
 

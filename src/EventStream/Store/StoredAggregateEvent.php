@@ -15,69 +15,44 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 /**
  * Aggregate event data.
  *
- * @property-read string      $eventId
- * @property-read int         $playheadPosition
- * @property-read string      $eventData
- * @property-read string      $eventClass
- * @property-read string      $occuredAt
- * @property-read string|null $recordedAt
+ * @psalm-readonly
  */
 final class StoredAggregateEvent
 {
     /**
      * Event ID.
-     *
-     * @var string
      */
-    public $eventId;
+    public string $eventId;
 
     /**
      * Playhead position.
-     *
-     * @var int
      */
-    public $playheadPosition;
+    public int $playheadPosition;
 
     /**
      * Serialized event data.
-     *
-     * @var string
      */
-    public $eventData;
+    public string $eventData;
 
     /**
      * Event class.
      *
      * @psalm-var class-string
-     *
-     * @var string
      */
-    public $eventClass;
+    public string $eventClass;
 
     /**
      * Occured at datetime.
-     *
-     * @var string
      */
-    public $occuredAt;
+    public string $occuredAt;
 
     /**
      * Recorded at datetime.
-     *
-     * @var string|null
      */
-    public $recordedAt;
+    public ?string $recordedAt = null;
 
     /**
      * @psalm-param class-string $eventClass
-     *
-     * @param string $eventId
-     * @param int    $playheadPosition
-     * @param string $eventData
-     * @param string $eventClass
-     * @param string $occuredAt
-     *
-     * @return self
      */
     public static function create(
         string $eventId,
@@ -91,15 +66,6 @@ final class StoredAggregateEvent
 
     /**
      * @psalm-param class-string $eventClass
-     *
-     * @param string $eventId
-     * @param int    $playheadPosition
-     * @param string $eventData
-     * @param string $eventClass
-     * @param string $occuredAt
-     * @param string $recordedAt
-     *
-     * @return self
      */
     public static function restore(
         string $eventId,
@@ -114,13 +80,6 @@ final class StoredAggregateEvent
 
     /**
      * @psalm-param class-string $eventClass
-     *
-     * @param string      $eventId
-     * @param int         $playheadPosition
-     * @param string      $eventData
-     * @param string      $eventClass
-     * @param string      $occuredAt
-     * @param string|null $recordedAt
      */
     private function __construct(
         string $eventId,

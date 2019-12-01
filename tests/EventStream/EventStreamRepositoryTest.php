@@ -41,30 +41,15 @@ use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
  */
 final class EventStreamRepositoryTest extends TestCase
 {
-    /**
-     * @var DatabaseAdapter
-     */
-    private static $adapter;
+    private static DatabaseAdapter $adapter;
 
-    /**
-     * @var EventStreamStore
-     */
-    private $eventStore;
+    private EventStreamStore $eventStore;
 
-    /**
-     * @var SnapshotStore
-     */
-    private $snapshotStore;
+    private SnapshotStore $snapshotStore;
 
-    /**
-     * @var Snapshotter
-     */
-    private $snapshotter;
+    private Snapshotter $snapshotter;
 
-    /**
-     * @var EventStreamRepository
-     */
-    private $eventStreamRepository;
+    private EventStreamRepository $eventStreamRepository;
 
     /**
      * {@inheritdoc}
@@ -111,8 +96,6 @@ final class EventStreamRepositoryTest extends TestCase
         wait(self::$adapter->execute('DROP TABLE event_store_stream CASCADE'));
         wait(self::$adapter->execute('DROP TABLE event_store_stream_events CASCADE'));
         wait(self::$adapter->execute('DROP TABLE event_store_snapshots CASCADE'));
-
-        self::$adapter = null;
     }
 
     /**
@@ -156,8 +139,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function flow(): void
     {
@@ -194,8 +175,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function loadWithSnapshot(): void
     {
@@ -231,8 +210,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function saveDuplicateAggregate(): void
     {
@@ -248,8 +225,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function loadWithoutSnapshot(): void
     {
@@ -282,8 +257,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function successSoftDeleteRevert(): void
     {
@@ -331,8 +304,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function successHardDeleteRevert(): void
     {
@@ -378,8 +349,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function revertUnknownStream(): void
     {
@@ -392,8 +361,6 @@ final class EventStreamRepositoryTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function revertWithVersionConflict(): void
     {

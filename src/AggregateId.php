@@ -22,25 +22,18 @@ abstract class AggregateId
 {
     /**
      * Identifier.
-     *
-     * @var string
      */
-    private $id;
+    private string $id;
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
      * @return static
      */
     public static function new(): self
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
         return new static(uuid());
     }
 
     /**
-     * @param string $id
-     *
      * @throws \ServiceBus\EventSourcing\Exceptions\InvalidAggregateIdentifier
      */
     final public function __construct(string $id)
@@ -53,9 +46,6 @@ abstract class AggregateId
         $this->id = $id;
     }
 
-    /**
-     * @return string
-     */
     public function toString(): string
     {
         return $this->id;

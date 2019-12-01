@@ -24,15 +24,10 @@ class SnapshotVersionTrigger implements SnapshotTrigger
 
     /**
      * Version step interval.
-     *
-     * @var int
      */
-    private $stepInterval;
+    private int $stepInterval;
 
-    /**
-     * @param int $stepInterval
-     */
-    public function __construct($stepInterval = self::DEFAULT_VERSION_STEP)
+    public function __construct(int $stepInterval = self::DEFAULT_VERSION_STEP)
     {
         $this->stepInterval = $stepInterval;
     }

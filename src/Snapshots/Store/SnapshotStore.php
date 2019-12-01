@@ -24,8 +24,6 @@ interface SnapshotStore
     /**
      * Save snapshot.
      *
-     * @param Snapshot $snapshot
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
@@ -37,8 +35,6 @@ interface SnapshotStore
     /**
      * Load snapshot.
      *
-     * @param AggregateId $id
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      *
@@ -48,8 +44,6 @@ interface SnapshotStore
 
     /**
      * Remove snapshot from database.
-     *
-     * @param AggregateId $id
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed

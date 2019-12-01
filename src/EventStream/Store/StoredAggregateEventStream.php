@@ -15,105 +15,64 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 /**
  * Aggregate event stream data.
  *
- * @property-read string                                                                       $aggregateId
- * @property-read string                                                                       $aggregateIdClass
- * @property-read string                                                                       $aggregateClass
- * @property-read array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent> $storedAggregateEvents
- * @property-read string                                                                       $createdAt
- * @property-read string|null                                                                  $closedAt
+ * @psalm-readonly
  */
 final class StoredAggregateEventStream
 {
     /**
      * Aggregate id.
-     *
-     * @var string
      */
-    public $aggregateId;
+    public string $aggregateId;
 
     /**
      * Aggregate id class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
-     *
-     * @var string
      */
-    public $aggregateIdClass;
+    public string $aggregateIdClass;
 
     /**
      * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
-     *
-     * @var string
      */
-    public $aggregateClass;
+    public string $aggregateClass;
 
     /**
      * Stored events data.
      *
-     * @var array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
+     * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
+     *
+     * @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
      */
-    public $storedAggregateEvents;
+    public array $storedAggregateEvents;
 
     /**
      * Stream created at datetime.
-     *
-     * @var string
      */
-    public $createdAt;
+    public string $createdAt;
 
     /**
      * Stream closed at datetime.
-     *
-     * @var string|null
      */
-    public $closedAt;
+    public ?string $closedAt = null;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\AggregateId> $aggregateIdClass
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
      * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent> $storedAggregateEvents
      *
-     * @param string      $aggregateId
-     * @param string      $aggregateIdClass
-     * @param string      $aggregateClass
-     * @param array       $storedAggregateEvents
-     * @param string      $createdAt
-     * @param string|null $closedAt
-     *
-     * @return self
+     * @param \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[] $storedAggregateEvents
      */
-    public static function create(
+    public function __construct(
         string $aggregateId,
         string $aggregateIdClass,
         string $aggregateClass,
         array $storedAggregateEvents,
         string $createdAt,
         ?string $closedAt = null
-    ): self {
-        return new self($aggregateId, $aggregateIdClass, $aggregateClass, $storedAggregateEvents, $createdAt, $closedAt);
-    }
-
-    /**
-     * @psalm-param class-string<\ServiceBus\EventSourcing\AggregateId> $aggregateIdClass
-     * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
-     *
-     * @param string                                                                       $aggregateId
-     * @param string                                                                       $aggregateIdClass
-     * @param string                                                                       $aggregateClass
-     * @param array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent> $storedAggregateEvents
-     * @param string                                                                       $createdAt
-     * @param string|null                                                                  $closedAt
-     */
-    private function __construct(
-        string $aggregateId,
-        string $aggregateIdClass,
-        string $aggregateClass,
-        array $storedAggregateEvents,
-        string $createdAt,
-        ?string $closedAt = null
-    ) {
+    )
+    {
         $this->aggregateId           = $aggregateId;
         $this->aggregateIdClass      = $aggregateIdClass;
         $this->aggregateClass        = $aggregateClass;

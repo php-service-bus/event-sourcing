@@ -18,45 +18,29 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty;
 /**
  * The key for the value stored in the index.
  *
- * @property-read string $indexName
- * @property-read string $valueKey
+ * @psalm-readonly
  */
 final class IndexKey
 {
-    /**
-     * @var string
-     */
-    public $indexName;
+    public string $indexName;
+
+    public string $valueKey;
 
     /**
-     * @var string
-     */
-    public $valueKey;
-
-    /**
-     * @param string $indexName
-     * @param string $valueKey
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty
-     *
-     * @return self
      */
-    public static function create(string $indexName, string $valueKey): self
+    public function __construct(string $indexName, string $valueKey)
     {
         self::assertIndexNameIsNotEmpty($indexName);
         self::assertValueKeyIsNotEmpty($valueKey);
 
-        return new self($indexName, $valueKey);
+        $this->indexName = $indexName;
+        $this->valueKey  = $valueKey;
     }
 
     /**
-     * @param string $indexName
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty
-     *
-     * @return void
-     *
      */
     private static function assertIndexNameIsNotEmpty(string $indexName): void
     {
@@ -67,11 +51,7 @@ final class IndexKey
     }
 
     /**
-     * @param string $valueKey
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty
-     *
-     * @return void
      */
     private static function assertValueKeyIsNotEmpty(string $valueKey): void
     {
@@ -79,15 +59,5 @@ final class IndexKey
         {
             throw new ValueKeyCantBeEmpty('Value key can\'t be empty');
         }
-    }
-
-    /**
-     * @param string $indexName
-     * @param string $valueKey
-     */
-    private function __construct(string $indexName, string $valueKey)
-    {
-        $this->indexName = $indexName;
-        $this->valueKey  = $valueKey;
     }
 }

@@ -15,8 +15,7 @@ namespace ServiceBus\EventSourcing\Snapshots;
 use ServiceBus\EventSourcing\Aggregate;
 
 /**
- * @property-read Aggregate $aggregate
- * @property-read int       $version
+ * @psalm-readonly
  */
 final class Snapshot
 {
@@ -25,30 +24,15 @@ final class Snapshot
      *
      * @var Aggregate
      */
-    public $aggregate;
+    public Aggregate $aggregate;
 
     /**
      * Aggregate version.
      *
      * @var int
      */
-    public $version;
+    public int $version;
 
-    /**
-     * @param Aggregate $aggregate
-     * @param int       $version
-     *
-     * @return self
-     */
-    public static function create(Aggregate $aggregate, int $version): self
-    {
-        return new self($aggregate, $version);
-    }
-
-    /**
-     * @param Aggregate $aggregate
-     * @param int       $version
-     */
     public function __construct(Aggregate $aggregate, int $version)
     {
         $this->aggregate = $aggregate;

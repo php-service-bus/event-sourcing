@@ -24,8 +24,6 @@ interface IndexStore
     /**
      * Find stored value.
      *
-     * @param IndexKey $indexKey
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -37,9 +35,6 @@ interface IndexStore
     /**
      * Add a new value.
      *
-     * @param IndexKey   $indexKey
-     * @param IndexValue $value $value
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -50,8 +45,6 @@ interface IndexStore
     public function add(IndexKey $indexKey, IndexValue $value): Promise;
 
     /**
-     * @param IndexKey $indexKey
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -62,9 +55,6 @@ interface IndexStore
 
     /**
      * Update existent value.
-     *
-     * @param IndexKey   $indexKey
-     * @param IndexValue $value
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed

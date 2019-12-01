@@ -31,14 +31,8 @@ final class SqlIndexStore implements IndexStore
 {
     private const TABLE_NAME = 'event_sourcing_indexes';
 
-    /**
-     * @var DatabaseAdapter
-     */
-    private $adapter;
+    private DatabaseAdapter $adapter;
 
-    /**
-     * @param DatabaseAdapter $adapter
-     */
     public function __construct(DatabaseAdapter $adapter)
     {
         $this->adapter = $adapter;
@@ -53,7 +47,6 @@ final class SqlIndexStore implements IndexStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(IndexKey $indexKey) use ($adapter): \Generator
             {
@@ -70,7 +63,7 @@ final class SqlIndexStore implements IndexStore
 
                 if (true === \is_array($result))
                 {
-                    return IndexValue::create($result['value_data']);
+                    return new  IndexValue($result['value_data']);
                 }
             },
             $indexKey
@@ -86,7 +79,6 @@ final class SqlIndexStore implements IndexStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
             {
@@ -120,7 +112,6 @@ final class SqlIndexStore implements IndexStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(IndexKey $indexKey) use ($adapter): \Generator
             {
@@ -144,7 +135,6 @@ final class SqlIndexStore implements IndexStore
     {
         $adapter = $this->adapter;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
             {

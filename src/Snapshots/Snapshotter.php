@@ -26,32 +26,15 @@ use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
  */
 final class Snapshotter
 {
-    /**
-     * Snapshot storage.
-     *
-     * @var SnapshotStore
-     */
-    private $store;
+    private SnapshotStore $store;
 
     /**
      * Snapshot generation trigger.
-     *
-     * @var SnapshotTrigger
      */
-    private $trigger;
+    private SnapshotTrigger $trigger;
 
-    /**
-     * Logger.
-     *
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @param SnapshotStore        $store
-     * @param SnapshotTrigger      $trigger
-     * @param LoggerInterface|null $logger
-     */
     public function __construct(
         SnapshotStore $store,
         SnapshotTrigger $trigger,
@@ -66,8 +49,6 @@ final class Snapshotter
      * Load snapshot for aggregate.
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
-     * @param AggregateId $id
      *
      * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
      */
@@ -108,8 +89,6 @@ final class Snapshotter
 
     /**
      * Store new snapshot.
-     *
-     * @param Snapshot $snapshot
      *
      * @return Promise It doesn't return any result
      */
@@ -152,11 +131,6 @@ final class Snapshotter
 
     /**
      * A snapshot must be created.
-     *
-     * @param Aggregate $aggregate
-     * @param Snapshot  $previousSnapshot
-     *
-     * @return bool
      */
     public function snapshotMustBeCreated(Aggregate $aggregate, Snapshot $previousSnapshot = null): bool
     {

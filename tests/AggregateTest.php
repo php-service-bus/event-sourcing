@@ -30,8 +30,6 @@ final class AggregateTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function changeClosedStreamState(): void
     {
@@ -55,7 +53,6 @@ final class AggregateTest extends TestCase
         $aggregateClosedEvent = $aggregateEvent->event;
 
         static::assertTrue(Uuid::isValid($aggregateClosedEvent->id));
-        /** @noinspection UnnecessaryAssertionInspection */
         static::assertInstanceOf(\DateTimeImmutable::class, $aggregateClosedEvent->datetime);
         static::assertSame(TestAggregate::class, $aggregateClosedEvent->aggregateClass);
         static::assertSame(TestAggregateId::class, $aggregateClosedEvent->idClass);
@@ -67,8 +64,6 @@ final class AggregateTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function aggregateCreated(): void
     {
@@ -82,14 +77,12 @@ final class AggregateTest extends TestCase
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
         $aggregateEvent = \end($events);
 
-        /** @noinspection UnnecessaryAssertionInspection */
         static::assertInstanceOf(AggregateCreated::class, $aggregateEvent->event);
 
         /** @var AggregateCreated $aggregateCreatedEvent */
         $aggregateCreatedEvent = $aggregateEvent->event;
 
         static::assertTrue(Uuid::isValid($aggregateCreatedEvent->id));
-        /** @noinspection UnnecessaryAssertionInspection */
         static::assertInstanceOf(\DateTimeImmutable::class, $aggregateCreatedEvent->datetime);
         static::assertSame(TestAggregate::class, $aggregateCreatedEvent->aggregateClass);
         static::assertSame(TestAggregateId::class, $aggregateCreatedEvent->idClass);

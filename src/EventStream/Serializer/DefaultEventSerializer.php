@@ -20,14 +20,8 @@ use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
  */
 final class DefaultEventSerializer implements EventSerializer
 {
-    /**
-     * @var SymfonyMessageSerializer
-     */
-    private $serializer;
+    private SymfonyMessageSerializer $serializer;
 
-    /**
-     * @param SymfonyMessageSerializer $serializer
-     */
     public function __construct(SymfonyMessageSerializer $serializer)
     {
         $this->serializer = $serializer;

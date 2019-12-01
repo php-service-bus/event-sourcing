@@ -27,7 +27,7 @@ abstract class Aggregate
 {
     public const   START_PLAYHEAD_INDEX = 0;
 
-    private const  EVENT_APPLY_PREFIX   = 'on';
+    private const  EVENT_APPLY_PREFIX = 'on';
 
     private const INTERNAL_EVENTS = [
         AggregateCreated::class,
@@ -38,17 +38,13 @@ abstract class Aggregate
 
     /**
      * Aggregate identifier.
-     *
-     * @var AggregateId
      */
-    private $id;
+    private AggregateId $id;
 
     /**
      * Current version.
-     *
-     * @var int
      */
-    private $version = self::START_PLAYHEAD_INDEX;
+    private int $version = self::START_PLAYHEAD_INDEX;
 
     /**
      * List of applied aggregate events.
@@ -57,43 +53,32 @@ abstract class Aggregate
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    private $events;
+    private array $events;
 
     /**
      * Created at datetime.
-     *
-     * @var \DateTimeImmutable
      */
-    private $createdAt;
+    private \DateTimeImmutable $createdAt;
 
     /**
      * Closed at datetime.
-     *
-     * @var \DateTimeImmutable|null
      */
-    private $closedAt;
+    private ?\DateTimeImmutable $closedAt = null;
 
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
-     * @param AggregateId $id
-     */
+
     final public function __construct(AggregateId $id)
     {
         $this->id = $id;
 
         $this->clearEvents();
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         $this->raise(
-            AggregateCreated::create($id, \get_class($this))
+            new AggregateCreated($id, \get_class($this))
         );
     }
 
     /**
      * Receive id.
-     *
-     * @return AggregateId
      */
     final public function id(): AggregateId
     {
@@ -102,8 +87,6 @@ abstract class Aggregate
 
     /**
      * Receive created at datetime.
-     *
-     * @return \DateTimeImmutable
      */
     final public function getCreatedAt(): \DateTimeImmutable
     {
@@ -113,15 +96,11 @@ abstract class Aggregate
     /**
      * Raise (apply event).
      *
-     * @param object $event
-     *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
-     *
-     * @return void
      */
     final protected function raise(object $event): void
     {
-        if (null !== $this->closedAt)
+        if(null !== $this->closedAt)
         {
             throw new AttemptToChangeClosedStream($this->id);
         }
@@ -134,8 +113,6 @@ abstract class Aggregate
 
     /**
      * Receive aggregate version.
-     *
-     * @return int
      */
     final public function version(): int
     {
@@ -146,8 +123,6 @@ abstract class Aggregate
      * Close aggregate (make it read-only).
      *
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream
-     *
-     * @return void
      */
     final protected function close(): void
     {
@@ -155,7 +130,7 @@ abstract class Aggregate
         $aggregateClass = \get_class($this);
 
         $this->raise(
-            AggregateClosed::create($this->id, $aggregateClass)
+            new AggregateClosed($this->id, $aggregateClass)
         );
     }
 
@@ -163,10 +138,6 @@ abstract class Aggregate
      * On aggregate closed.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
-     *
-     * @param AggregateClosed $event
-     *
-     * @return void
      */
     private function onAggregateClosed(AggregateClosed $event): void
     {
@@ -177,10 +148,6 @@ abstract class Aggregate
      * On aggregate created.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
-     *
-     * @param AggregateCreated $event
-     *
-     * @return void
      */
     private function onAggregateCreated(AggregateCreated $event): void
     {
@@ -193,8 +160,6 @@ abstract class Aggregate
      * @noinspection PhpUnusedPrivateMethodInspection
      *
      * @see          EventSourcingProvider::save()
-     *
-     * @return AggregateEventStream
      */
     private function makeStream(): AggregateEventStream
     {
@@ -205,7 +170,7 @@ abstract class Aggregate
 
         $this->clearEvents();
 
-        return AggregateEventStream::create(
+        return new AggregateEventStream(
             $this->id,
             $aggregateClass,
             $events,
@@ -220,10 +185,6 @@ abstract class Aggregate
      * @noinspection PhpUnusedPrivateMethodInspection
      *
      * @see          EventSourcingProvider::load()
-     *
-     * @param AggregateEventStream $aggregateEventsStream
-     *
-     * @return void
      */
     private function appendStream(AggregateEventStream $aggregateEventsStream): void
     {
@@ -232,33 +193,22 @@ abstract class Aggregate
         $this->id = $aggregateEventsStream->id;
 
         /** @var AggregateEvent $aggregateEvent */
-        foreach ($aggregateEventsStream->events as $aggregateEvent)
+        foreach($aggregateEventsStream->events as $aggregateEvent)
         {
             $this->applyEvent($aggregateEvent->event);
 
-            /** @noinspection DisconnectedForeachInstructionInspection */
             $this->increaseVersion(self::INCREASE_VERSION_STEP);
         }
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
      * Attach event to stream
-     *
-     * @param object $event
-     *
-     * @return void
      */
     private function attachEvent(object $event): void
     {
         $this->increaseVersion(self::INCREASE_VERSION_STEP);
 
-        /**
-         * @noinspection PhpUnhandledExceptionInspection
-         *
-         * @var \DateTimeImmutable $currentDate
-         */
+        /** @var \DateTimeImmutable $currentDate */
         $currentDate = datetimeInstantiator('NOW');
 
         $this->events[] = AggregateEvent::create(uuid(), $event, $this->version, $currentDate);
@@ -266,10 +216,6 @@ abstract class Aggregate
 
     /**
      * Apply event.
-     *
-     * @param object $event
-     *
-     * @return void
      */
     private function applyEvent(object $event): void
     {
@@ -282,33 +228,17 @@ abstract class Aggregate
 
     /**
      * Is internal event (for current class).
-     *
-     * @param object $event
-     *
-     * @return bool
      */
     private static function isInternalEvent(object $event): bool
     {
         return true === \in_array(\get_class($event), self::INTERNAL_EVENTS, true);
     }
 
-    /**
-     * @param string $listenerName
-     * @param object  $event
-     *
-     * @return void
-     */
     private function processInternalEvent(string $listenerName, object $event): void
     {
         $this->{$listenerName}($event);
     }
 
-    /**
-     * @param string $listenerName
-     * @param object  $event
-     *
-     * @return void
-     */
     private function processChildEvent(string $listenerName, object $event): void
     {
         /**
@@ -320,7 +250,7 @@ abstract class Aggregate
          */
         $closure = function(object $event) use ($listenerName): void
         {
-            if (true === \method_exists($this, $listenerName))
+            if(true === \method_exists($this, $listenerName))
             {
                 $this->{$listenerName}($event);
             }
@@ -331,17 +261,13 @@ abstract class Aggregate
 
     /**
      * Create event listener name.
-     *
-     * @param object $event
-     *
-     * @return string
      */
     private static function createListenerName(object $event): string
     {
         $eventListenerMethodNameParts = \explode('\\', \get_class($event));
 
         /** @var string $latestPart */
-        $latestPart =  \end($eventListenerMethodNameParts);
+        $latestPart = \end($eventListenerMethodNameParts);
 
         return \sprintf(
             '%s%s',
@@ -352,10 +278,6 @@ abstract class Aggregate
 
     /**
      * Increase aggregate version.
-     *
-     * @param int $step
-     *
-     * @return void
      */
     private function increaseVersion(int $step): void
     {
@@ -364,8 +286,6 @@ abstract class Aggregate
 
     /**
      * Clear all aggregate events.
-     *
-     * @return void
      */
     private function clearEvents(): void
     {

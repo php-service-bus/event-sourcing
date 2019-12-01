@@ -27,15 +27,9 @@ use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
  */
 final class SqlIndexStoreTest extends TestCase
 {
-    /**
-     * @var DatabaseAdapter
-     */
-    private static $adapter;
+    private static DatabaseAdapter $adapter;
 
-    /**
-     * @var SqlIndexStore
-     */
-    private $indexStore;
+    private SqlIndexStore $indexStore;
 
     /**
      * {@inheritdoc}
@@ -67,8 +61,6 @@ final class SqlIndexStoreTest extends TestCase
         parent::tearDownAfterClass();
 
         wait(self::$adapter->execute('DROP TABLE IF EXISTS event_sourcing_indexes CASCADE'));
-
-        self::$adapter = null;
     }
 
     /**
@@ -99,13 +91,11 @@ final class SqlIndexStoreTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function save(): void
     {
-        $index = IndexKey::create(__CLASS__, 'testKey');
-        $value = IndexValue::create(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
         /** @var int $count */
         $count = wait($this->indexStore->add($index, $value));
@@ -123,15 +113,13 @@ final class SqlIndexStoreTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function saveDuplicate(): void
     {
         $this->expectException(UniqueConstraintViolationCheckFailed::class);
 
-        $index = IndexKey::create(__CLASS__, 'testKey');
-        $value = IndexValue::create(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
         wait($this->indexStore->add($index, $value));
         wait($this->indexStore->add($index, $value));
@@ -146,12 +134,12 @@ final class SqlIndexStoreTest extends TestCase
      */
     public function update(): void
     {
-        $index = IndexKey::create(__CLASS__, 'testKey');
-        $value = IndexValue::create(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
         wait($this->indexStore->add($index, $value));
 
-        $newValue = IndexValue::create('qwerty');
+        $newValue = new IndexValue('qwerty');
 
         wait($this->indexStore->update($index, $newValue));
 
@@ -166,13 +154,11 @@ final class SqlIndexStoreTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function remove(): void
     {
-        $index = IndexKey::create(__CLASS__, 'testKey');
-        $value = IndexValue::create(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
         wait($this->indexStore->add($index, $value));
         wait($this->indexStore->delete($index));

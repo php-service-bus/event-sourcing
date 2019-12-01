@@ -19,9 +19,6 @@ use ServiceBus\EventSourcing\AggregateId;
  */
 final class AttemptToChangeClosedStream extends \RuntimeException
 {
-    /**
-     * @param AggregateId $id
-     */
     public function __construct(AggregateId $id)
     {
         parent::__construct(

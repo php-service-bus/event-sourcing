@@ -20,11 +20,7 @@ interface EventSerializer
     /**
      * Serialize event object to string.
      *
-     * @param object $event
-     *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
-     *
-     * @return string
      */
     public function serialize(object $event): string;
 
@@ -33,12 +29,7 @@ interface EventSerializer
      *
      * @psalm-param class-string $eventClass
      *
-     * @param string $eventClass
-     * @param string $payload
-     *
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
-     *
-     * @return object
      */
     public function unserialize(string $eventClass, string $payload): object;
 }

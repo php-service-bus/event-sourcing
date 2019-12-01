@@ -37,32 +37,14 @@ final class EventStreamRepository
 
     public const REVERT_MODE_DELETE = 2;
 
-    /**
-     * @var EventStreamStore
-     */
-    private $store;
+    private EventStreamStore $store;
 
-    /**
-     * @var EventSerializer
-     */
-    private $serializer;
+    private EventSerializer $serializer;
 
-    /**
-     * @var Snapshotter
-     */
-    private $snapshotter;
+    private Snapshotter $snapshotter;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @param EventStreamStore     $store
-     * @param Snapshotter          $snapshotter
-     * @param EventSerializer      $serializer
-     * @param LoggerInterface|null $logger
-     */
     public function __construct(
         EventStreamStore $store,
         Snapshotter $snapshotter,
@@ -80,8 +62,6 @@ final class EventStreamRepository
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @param AggregateId $id
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
@@ -97,7 +77,6 @@ final class EventStreamRepository
         $snaphotter = $this->snapshotter;
         $logger     = $this->logger;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(AggregateId $id) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
@@ -152,6 +131,7 @@ final class EventStreamRepository
                 }
                 finally
                 {
+                    /** @psalm-suppress PossiblyUndefinedVariable */
                     unset($storedEventStream, $loadedSnapshot, $fromStreamVersion);
                 }
             },
@@ -163,8 +143,6 @@ final class EventStreamRepository
      * Save a new event stream.
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
-     * @param Aggregate $aggregate
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -182,7 +160,6 @@ final class EventStreamRepository
         $snaphotter = $this->snapshotter;
         $logger     = $this->logger;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
@@ -228,8 +205,6 @@ final class EventStreamRepository
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @param Aggregate $aggregate
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
@@ -245,7 +220,6 @@ final class EventStreamRepository
         $snaphotter = $this->snapshotter;
         $logger     = $this->logger;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
@@ -296,10 +270,6 @@ final class EventStreamRepository
      *
      * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
-     * @param Aggregate $aggregate
-     * @param int       $toVersion
-     * @param int       $mode
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
@@ -315,7 +285,6 @@ final class EventStreamRepository
         $snaphotter = $this->snapshotter;
         $logger     = $this->logger;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
             static function(Aggregate $aggregate, int $toVersion, int $mode) use ($store, $serializer, $snaphotter, $logger): \Generator
             {
@@ -340,7 +309,7 @@ final class EventStreamRepository
                     /** @var Aggregate $aggregate */
                     $aggregate = self::restoreStream($serializer, null, $storedEventStream);
 
-                    yield $snaphotter->store(Snapshot::create($aggregate, $aggregate->version()));
+                    yield $snaphotter->store(new Snapshot($aggregate, $aggregate->version()));
 
                     return $aggregate;
                 }
@@ -357,6 +326,7 @@ final class EventStreamRepository
                 }
                 finally
                 {
+                    /** @psalm-suppress PossiblyUndefinedVariable */
                     unset($storedEventStream);
                 }
             },
@@ -367,20 +337,12 @@ final class EventStreamRepository
     }
 
     /**
-     * @param EventSerializer  $eventSerializer
-     * @param EventStreamStore $eventStreamStore
-     * @param Snapshotter      $snapshotter
-     * @param Aggregate        $aggregate
-     * @param bool             $isNew
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
-     *
-     * @return \Generator
      */
     private static function doStore(
         EventSerializer $eventSerializer,
@@ -395,6 +357,7 @@ final class EventStreamRepository
 
         $storedEventStream = streamToStoredRepresentation($eventSerializer, $eventStream);
 
+        /** @noinspection PhpUnnecessaryLocalVariableInspection */
         $promise = true === $isNew
             ? $eventStreamStore->save($storedEventStream)
             : $eventStreamStore->append($storedEventStream);
@@ -406,7 +369,7 @@ final class EventStreamRepository
 
         if (true === $snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
         {
-            yield $snapshotter->store(Snapshot::create($aggregate, $aggregate->version()));
+            yield $snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
         }
 
         unset($eventStream, $loadedSnapshot, $storedEventStream);
@@ -417,15 +380,9 @@ final class EventStreamRepository
     /**
      * Restore the aggregate from the event stream/Add missing events to the aggregate from the snapshot.
      *
-     * @param EventSerializer                 $eventSerializer
-     * @param Aggregate|null                  $aggregate
-     * @param StoredAggregateEventStream|null $storedEventStream
-     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
-     *
-     * @return Aggregate|null
      */
     private static function restoreStream(
         EventSerializer $eventSerializer,

@@ -17,96 +17,64 @@ use ServiceBus\EventSourcing\AggregateId;
 /**
  * Event stream.
  *
- * @property-read AggregateId                                                      $id
- * @property-read string                                                           $aggregateClass
- * @property-read array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
- * @property-read array<int, object>                                               $originEvents
- * @property-read \DateTimeImmutable                                               $createdAt
- * @property-read \DateTimeImmutable|null                                          $closedAt
+ * @psalm-readonly
  */
 final class AggregateEventStream
 {
     /**
      * Stream (aggregate) identifier.
-     *
-     * @var AggregateId
      */
-    public $id;
+    public AggregateId $id;
 
     /**
      * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
-     *
-     * @var string
      */
-    public $aggregateClass;
+    public string $aggregateClass;
 
     /**
      * Event collection.
      *
-     * @var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     *
+     * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    public $events;
+    public array $events;
 
     /**
      * Origin event collection.
      *
-     * @var array<int, object>
+     * @psalm-var array<int, object>
+     *
+     * @var object[]
      */
-    public $originEvents;
+    public array $originEvents;
 
     /**
      * Created at datetime.
-     *
-     * @var \DateTimeImmutable
      */
-    public $createdAt;
+    public \DateTimeImmutable $createdAt;
 
     /**
      * Closed at datetime.
-     *
-     * @var \DateTimeImmutable|null
      */
-    public $closedAt;
+    public ?\DateTimeImmutable $closedAt = null;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
+     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      *
-     * @param AggregateId                                                      $id
-     * @param string                                                           $aggregateClass
-     * @param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
-     * @param \DateTimeImmutable                                               $createdAt
-     * @param \DateTimeImmutable|null                                          $closedAt
-     *
-     * @return self
+     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[] $events
      */
-    public static function create(
+    public function __construct(
         AggregateId $id,
         string $aggregateClass,
         array $events,
         \DateTimeImmutable $createdAt,
         ?\DateTimeImmutable $closedAt
-    ): self {
-        return new self($id, $aggregateClass, $events, $createdAt, $closedAt);
-    }
-
-    /**
-     * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
-     *
-     * @param AggregateId                                                      $id
-     * @param string                                                           $aggregateClass
-     * @param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
-     * @param \DateTimeImmutable                                               $createdAt
-     * @param \DateTimeImmutable|null                                          $closedAt
-     */
-    private function __construct(
-        AggregateId $id,
-        string $aggregateClass,
-        array $events,
-        \DateTimeImmutable $createdAt,
-        ?\DateTimeImmutable $closedAt
-    ) {
+    )
+    {
         $this->id             = $id;
         $this->aggregateClass = $aggregateClass;
         $this->events         = self::sortEvents($events);
@@ -116,15 +84,15 @@ final class AggregateEventStream
     }
 
     /**
-     * @param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      *
-     * @return array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
      */
     private static function sortEvents(array $events): array
     {
         $result = [];
 
-        foreach ($events as $aggregateEvent)
+        foreach($events as $aggregateEvent)
         {
             /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
             $result[$aggregateEvent->playhead] = $aggregateEvent;
@@ -136,7 +104,7 @@ final class AggregateEventStream
     }
 
     /**
-     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-param  array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      * @psalm-return array<int, object>
      *
      * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[] $events

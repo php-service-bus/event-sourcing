@@ -26,15 +26,13 @@ final class IndexValueTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function createWithWrongType(): void
     {
         $this->expectException(InvalidValueType::class);
         $this->expectExceptionMessage('The value must be of type "scalar". "object" passed');
 
-        IndexValue::create(
+        new IndexValue(
             static function(): void
             {
             }
@@ -45,26 +43,22 @@ final class IndexValueTest extends TestCase
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function createWithEmptyValue(): void
     {
         $this->expectException(EmptyValuesNotAllowed::class);
         $this->expectExceptionMessage('Value can not be empty');
 
-        IndexValue::create('');
+        new IndexValue('');
     }
 
     /**
      * @test
      *
      * @throws \Throwable
-     *
-     * @return void
      */
     public function successCreate(): void
     {
-        IndexValue::create(0);
+        new IndexValue(0);
     }
 }

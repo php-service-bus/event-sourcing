@@ -22,11 +22,6 @@ interface SnapshotTrigger
 {
     /**
      * A snapshot must be created?
-     *
-     * @param Aggregate $aggregate
-     * @param Snapshot  $previousSnapshot
-     *
-     * @return bool
      */
     public function snapshotMustBeCreated(Aggregate $aggregate, Snapshot $previousSnapshot = null): bool;
 }

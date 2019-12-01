@@ -18,7 +18,7 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType;
 /**
  * The value stored in the index.
  *
- * @property-read mixed $value
+ * @psalm-readonly
  */
 final class IndexValue
 {
@@ -32,23 +32,19 @@ final class IndexValue
      *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
-     *
-     * @return self
      */
-    public static function create($value): self
+    public function __construct($value)
     {
         self::assertIsScalar($value);
         self::assertNotEmpty($value);
 
-        return new self($value);
+        $this->value = $value;
     }
 
     /**
      * @param mixed $value
      *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
-     *
-     * @return void
      */
     private static function assertNotEmpty($value): void
     {
@@ -62,8 +58,6 @@ final class IndexValue
      * @param mixed $value
      *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
-     *
-     * @return void
      */
     private static function assertIsScalar($value): void
     {
@@ -73,13 +67,5 @@ final class IndexValue
                 \sprintf('The value must be of type "scalar". "%s" passed', \gettype($value))
             );
         }
-    }
-
-    /**
-     * @param mixed $value
-     */
-    private function __construct($value)
-    {
-        $this->value = $value;
     }
 }

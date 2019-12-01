@@ -18,10 +18,7 @@ use ServiceBus\EventSourcing\AggregateId;
 /**
  * New aggregate created.
  *
- * @property-read string             $id
- * @property-read string             $idClass
- * @property-read string             $aggregateClass
- * @property-read \DateTimeImmutable $datetime
+ * @psalm-readonly
  */
 final class AggregateCreated
 {
@@ -30,7 +27,7 @@ final class AggregateCreated
      *
      * @var string
      */
-    public $id;
+    public string $id;
 
     /**
      * Aggregate identifier class.
@@ -39,7 +36,7 @@ final class AggregateCreated
      *
      * @var string
      */
-    public $idClass;
+    public string $idClass;
 
     /**
      * Aggregate class.
@@ -48,54 +45,28 @@ final class AggregateCreated
      *
      * @var string
      */
-    public $aggregateClass;
+    public string $aggregateClass;
 
     /**
      * Operation datetime.
      *
      * @var \DateTimeImmutable
      */
-    public $datetime;
+    public \DateTimeImmutable $datetime;
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
-     * @psalm-param  class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
-     *
-     * @param AggregateId $id
-     * @param string      $aggregateClass
-     *
-     * @return self
+     * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
      */
-    public static function create(AggregateId $id, string $aggregateClass): self
+    public function __construct(AggregateId $id, string $aggregateClass)
     {
         /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $idClass */
-        $idClass = \get_class($id);
+        $idClass = (string) \get_class($id);
 
-        return new self($id->toString(), $idClass, $aggregateClass);
-    }
-
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
-     * @psalm-param  class-string<\ServiceBus\EventSourcing\AggregateId> $idClass
-     * @psalm-param  class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
-     *
-     * @param string $id
-     * @param string $idClass
-     * @param string $aggregateClass
-     */
-    private function __construct(string $id, string $idClass, string $aggregateClass)
-    {
-        $this->id             = $id;
+        $this->id             = $id->toString();
         $this->idClass        = $idClass;
         $this->aggregateClass = $aggregateClass;
 
-        /**
-         * @noinspection PhpUnhandledExceptionInspection
-         *
-         * @var \DateTimeImmutable
-         */
+        /** @var \DateTimeImmutable $currentDate */
         $currentDate = datetimeInstantiator('NOW');
 
         $this->datetime = $currentDate;
