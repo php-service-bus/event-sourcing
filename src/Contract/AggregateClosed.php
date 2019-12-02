@@ -12,7 +12,7 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Contract;
 
-use function ServiceBus\Common\datetimeInstantiator;
+use function ServiceBus\Common\now;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
@@ -57,10 +57,6 @@ final class AggregateClosed
         $this->id             = $id->toString();
         $this->idClass        = $idClass;
         $this->aggregateClass = $aggregateClass;
-
-        /** @var \DateTimeImmutable $currentDate */
-        $currentDate = datetimeInstantiator('NOW');
-
-        $this->datetime = $currentDate;
+        $this->datetime       = now();
     }
 }

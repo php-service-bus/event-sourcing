@@ -60,15 +60,13 @@ final class EventStreamRepository
     /**
      * Load aggregate.
      *
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
+     * Returns \ServiceBus\EventSourcing\Aggregate|null
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
-     *
-     * @return Promise<\ServiceBus\EventSourcing\Aggregate|null>
      */
     public function load(AggregateId $id): Promise
     {
@@ -142,7 +140,7 @@ final class EventStreamRepository
     /**
      * Save a new event stream.
      *
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
+     * Returns array<int, object>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -150,8 +148,6 @@ final class EventStreamRepository
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
-     *
-     * @return Promise<array<int, object>>
      */
     public function save(Aggregate $aggregate): Promise
     {
@@ -203,15 +199,13 @@ final class EventStreamRepository
     /**
      * Update existent event stream (append events).
      *
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
+     * Returns array<int, object>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
-     *
-     * @return Promise<array<int, object>>
      */
     public function update(Aggregate $aggregate): Promise
     {
@@ -263,20 +257,18 @@ final class EventStreamRepository
     /**
      * Revert aggregate to specified version.
      *
+     * Returns \ServiceBus\EventSourcing\Aggregate
+     *
      * Mode options:
      *   - 1 (self::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may be version
      *   conflicts in some situations
      *   - 2 (self::REVERT_MODE_DELETE): Removes tail events from the database (the best option)
-     *
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
-     *
-     * @return Promise<\ServiceBus\EventSourcing\Aggregate>
      */
     public function revert(Aggregate $aggregate, int $toVersion, int $mode = self::REVERT_MODE_SOFT_DELETE): Promise
     {

@@ -39,8 +39,6 @@ final class SqlIndexStore implements IndexStore
     }
 
     /**
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
      * {@inheritdoc}
      */
     public function find(IndexKey $indexKey): Promise
@@ -71,8 +69,6 @@ final class SqlIndexStore implements IndexStore
     }
 
     /**
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
      * {@inheritdoc}
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise
@@ -127,8 +123,6 @@ final class SqlIndexStore implements IndexStore
     }
 
     /**
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
      * {@inheritdoc}
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise

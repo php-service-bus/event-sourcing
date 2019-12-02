@@ -53,7 +53,9 @@ abstract class Aggregate
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    private array $events;
+    private array
+
+ $events;
 
     /**
      * Created at datetime.
@@ -64,7 +66,6 @@ abstract class Aggregate
      * Closed at datetime.
      */
     private ?\DateTimeImmutable $closedAt = null;
-
 
     final public function __construct(AggregateId $id)
     {
@@ -100,7 +101,7 @@ abstract class Aggregate
      */
     final protected function raise(object $event): void
     {
-        if(null !== $this->closedAt)
+        if (null !== $this->closedAt)
         {
             throw new AttemptToChangeClosedStream($this->id);
         }
@@ -193,7 +194,7 @@ abstract class Aggregate
         $this->id = $aggregateEventsStream->id;
 
         /** @var AggregateEvent $aggregateEvent */
-        foreach($aggregateEventsStream->events as $aggregateEvent)
+        foreach ($aggregateEventsStream->events as $aggregateEvent)
         {
             $this->applyEvent($aggregateEvent->event);
 
@@ -202,7 +203,7 @@ abstract class Aggregate
     }
 
     /**
-     * Attach event to stream
+     * Attach event to stream.
      */
     private function attachEvent(object $event): void
     {
@@ -250,7 +251,7 @@ abstract class Aggregate
          */
         $closure = function(object $event) use ($listenerName): void
         {
-            if(true === \method_exists($this, $listenerName))
+            if (true === \method_exists($this, $listenerName))
             {
                 $this->{$listenerName}($event);
             }

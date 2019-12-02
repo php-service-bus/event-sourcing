@@ -45,7 +45,9 @@ final class StoredAggregateEventStream
      *
      * @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
      */
-    public array $storedAggregateEvents;
+    public array
+
+ $storedAggregateEvents;
 
     /**
      * Stream created at datetime.
@@ -71,8 +73,7 @@ final class StoredAggregateEventStream
         array $storedAggregateEvents,
         string $createdAt,
         ?string $closedAt = null
-    )
-    {
+    ) {
         $this->aggregateId           = $aggregateId;
         $this->aggregateIdClass      = $aggregateIdClass;
         $this->aggregateClass        = $aggregateClass;

@@ -48,9 +48,7 @@ final class Snapshotter
     /**
      * Load snapshot for aggregate.
      *
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
-     * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
+     * Returns \ServiceBus\EventSourcing\Snapshots\Snapshot|null
      */
     public function load(AggregateId $id): Promise
     {
@@ -89,8 +87,6 @@ final class Snapshotter
 
     /**
      * Store new snapshot.
-     *
-     * @return Promise It doesn't return any result
      */
     public function store(Snapshot $snapshot): Promise
     {

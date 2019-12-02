@@ -29,7 +29,7 @@ function streamToDomainRepresentation(EventSerializer $serializer, StoredAggrega
 {
     $events = [];
 
-    foreach($storedAggregateEventsStream->storedAggregateEvents as $storedAggregateEvent)
+    foreach ($storedAggregateEventsStream->storedAggregateEvents as $storedAggregateEvent)
     {
         $events[] = eventToDomainRepresentation($serializer, $storedAggregateEvent);
     }
@@ -106,8 +106,7 @@ function eventToDomainRepresentation(EventSerializer $serializer, StoredAggregat
 function streamToStoredRepresentation(
     EventSerializer $serializer,
     AggregateEventStream $aggregateEvent
-): StoredAggregateEventStream
-{
+): StoredAggregateEventStream {
     $preparedEvents = \array_map(
         static function(AggregateEvent $aggregateEvent) use ($serializer): StoredAggregateEvent
         {

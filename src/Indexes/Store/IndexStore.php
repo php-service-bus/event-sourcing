@@ -24,23 +24,23 @@ interface IndexStore
     /**
      * Find stored value.
      *
+     * Returns \ServiceBus\EventSourcing\Indexes\IndexValue|null
+     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise<\ServiceBus\EventSourcing\Indexes\IndexValue|null>
      */
     public function find(IndexKey $indexKey): Promise;
 
     /**
      * Add a new value.
      *
+     * Returns the number of added records
+     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
-     *
-     * @return Promise<int> Returns the number of added records
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise;
 
@@ -48,8 +48,6 @@ interface IndexStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise It doesn't return any result
      */
     public function delete(IndexKey $indexKey): Promise;
 
@@ -59,8 +57,6 @@ interface IndexStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise<int> Returns the number of updated records
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise;
 }

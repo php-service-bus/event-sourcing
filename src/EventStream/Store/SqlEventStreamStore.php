@@ -75,16 +75,13 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
      * {@inheritdoc}
      */
     public function load(
         AggregateId $id,
         int $fromVersion = Aggregate::START_PLAYHEAD_INDEX,
         ?int $toVersion = null
-    ): Promise
-    {
+    ): Promise {
         $adapter = $this->adapter;
 
         return call(
@@ -317,7 +314,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Complete removal of the "tail" events from the database
+     * Complete removal of the "tail" events from the database.
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
@@ -342,7 +339,7 @@ final class SqlEventStreamStore implements EventStreamStore
     }
 
     /**
-     * Soft deletion of events following the specified version
+     * Soft deletion of events following the specified version.
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions

@@ -28,8 +28,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
-     *
-     * @return Promise It doesn't return any result
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise;
 
@@ -39,20 +37,18 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise It doesn't return any result
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise;
 
     /**
      * Load event stream.
      *
+     * Returns \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null
+     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\ResultSetIterationFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise<\ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null>
      */
     public function load(
         AggregateId $id,
@@ -66,8 +62,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
-     *
-     * @return Promise It does not return any result
      */
     public function close(AggregateId $id): Promise;
 
@@ -79,8 +73,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist
      * @throws \ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed
-     *
-     * @return Promise It doesn't return any result
      */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise;
 }

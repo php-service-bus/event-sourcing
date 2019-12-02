@@ -55,8 +55,7 @@ final class AggregateEvent
         int $playhead,
         \DateTimeImmutable $occuredAt,
         \DateTimeImmutable $recordedAt
-    ): self
-    {
+    ): self {
         return new self($id, $event, $playhead, $occuredAt, $recordedAt);
     }
 
@@ -66,8 +65,7 @@ final class AggregateEvent
         int $playhead,
         \DateTimeImmutable $occuredAt,
         ?\DateTimeImmutable $recordedAt = null
-    )
-    {
+    ) {
         $this->id         = $id;
         $this->event      = $event;
         $this->playhead   = $playhead;

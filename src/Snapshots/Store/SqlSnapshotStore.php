@@ -68,8 +68,6 @@ final class SqlSnapshotStore implements SnapshotStore
     }
 
     /**
-     * @psalm-suppress MixedTypeCoercion Incorrect resolving the value of the promise
-     *
      * {@inheritdoc}
      */
     public function load(AggregateId $id): Promise

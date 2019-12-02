@@ -40,7 +40,9 @@ final class AggregateEventStream
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    public array $events;
+    public array
+
+ $events;
 
     /**
      * Origin event collection.
@@ -49,7 +51,9 @@ final class AggregateEventStream
      *
      * @var object[]
      */
-    public array $originEvents;
+    public array
+
+ $originEvents;
 
     /**
      * Created at datetime.
@@ -73,8 +77,7 @@ final class AggregateEventStream
         array $events,
         \DateTimeImmutable $createdAt,
         ?\DateTimeImmutable $closedAt
-    )
-    {
+    ) {
         $this->id             = $id;
         $this->aggregateClass = $aggregateClass;
         $this->events         = self::sortEvents($events);
@@ -92,7 +95,7 @@ final class AggregateEventStream
     {
         $result = [];
 
-        foreach($events as $aggregateEvent)
+        foreach ($events as $aggregateEvent)
         {
             /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
             $result[$aggregateEvent->playhead] = $aggregateEvent;
