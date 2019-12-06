@@ -24,27 +24,35 @@ final class AggregateClosed
 {
     /**
      * Aggregate identifier.
+     *
+     * @var string
      */
-    public string $id;
+    public $id;
 
     /**
      * Aggregate identifier class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
+     *
+     * @var string
      */
-    public string $idClass;
+    public $idClass;
 
     /**
      * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
+     * @var string
      */
-    public string $aggregateClass;
+    public $aggregateClass;
 
     /**
      * Operation datetime.
+     *
+     * @var \DateTimeImmutable
      */
-    public \DateTimeImmutable $datetime;
+    public $datetime;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass

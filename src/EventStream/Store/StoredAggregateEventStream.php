@@ -21,22 +21,28 @@ final class StoredAggregateEventStream
 {
     /**
      * Aggregate id.
+     *
+     * @var string
      */
-    public string $aggregateId;
+    public $aggregateId;
 
     /**
      * Aggregate id class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
+     *
+     * @var string
      */
-    public string $aggregateIdClass;
+    public $aggregateIdClass;
 
     /**
      * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
+     * @var string
      */
-    public string $aggregateClass;
+    public $aggregateClass;
 
     /**
      * Stored events data.
@@ -45,19 +51,21 @@ final class StoredAggregateEventStream
      *
      * @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
      */
-    public array
-
- $storedAggregateEvents;
+    public $storedAggregateEvents;
 
     /**
      * Stream created at datetime.
+     *
+     * @var string
      */
-    public string $createdAt;
+    public $createdAt;
 
     /**
      * Stream closed at datetime.
+     *
+     * @var string|null
      */
-    public ?string $closedAt = null;
+    public $closedAt = null;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\AggregateId> $aggregateIdClass

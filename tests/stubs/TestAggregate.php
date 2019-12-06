@@ -19,9 +19,11 @@ use ServiceBus\EventSourcing\Aggregate;
  */
 final class TestAggregate extends Aggregate
 {
-    private ?string $firstValue = null;
+    /** @var string|null */
+    private $firstValue = null;
 
-    private ?string $secondValue = null;
+    /** @var string|null */
+    private $secondValue = null;
 
     /**
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream

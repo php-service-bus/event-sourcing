@@ -23,15 +23,19 @@ final class AggregateEventStream
 {
     /**
      * Stream (aggregate) identifier.
+     *
+     * @var AggregateId
      */
-    public AggregateId $id;
+    public $id;
 
     /**
      * Aggregate class.
      *
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
+     *
+     * @var string
      */
-    public string $aggregateClass;
+    public $aggregateClass;
 
     /**
      * Event collection.
@@ -40,9 +44,7 @@ final class AggregateEventStream
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    public array
-
- $events;
+    public $events;
 
     /**
      * Origin event collection.
@@ -51,19 +53,21 @@ final class AggregateEventStream
      *
      * @var object[]
      */
-    public array
-
- $originEvents;
+    public $originEvents;
 
     /**
      * Created at datetime.
+     *
+     * @var \DateTimeImmutable
      */
-    public \DateTimeImmutable $createdAt;
+    public $createdAt;
 
     /**
      * Closed at datetime.
+     *
+     * @var \DateTimeImmutable|null
      */
-    public ?\DateTimeImmutable $closedAt = null;
+    public $closedAt = null;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
@@ -87,7 +91,7 @@ final class AggregateEventStream
     }
 
     /**
-     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-param  array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      *
      * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
      */

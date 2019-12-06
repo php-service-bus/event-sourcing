@@ -21,28 +21,38 @@ final class AggregateEvent
 {
     /**
      * Event id.
+     *
+     * @var string
      */
-    public string $id;
+    public $id;
 
     /**
      * Playhead position.
+     *
+     * @var int
      */
-    public int $playhead;
+    public $playhead;
 
     /**
      * Received event.
+     *
+     * @var object
      */
-    public object $event;
+    public $event;
 
     /**
      * Occurred datetime.
+     *
+     * @var \DateTimeImmutable
      */
-    public \DateTimeImmutable$occuredAt;
+    public $occuredAt;
 
     /**
      * Recorded datetime.
+     *
+     * @var \DateTimeImmutable|null
      */
-    public ?\DateTimeImmutable $recordedAt = null;
+    public $recordedAt = null;
 
     public static function create(string $id, object $event, int $playhead, \DateTimeImmutable $occuredAt): self
     {

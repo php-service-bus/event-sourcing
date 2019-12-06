@@ -27,7 +27,7 @@ final class AggregateCreated
      *
      * @var string
      */
-    public string $id;
+    public $id;
 
     /**
      * Aggregate identifier class.
@@ -36,7 +36,7 @@ final class AggregateCreated
      *
      * @var string
      */
-    public string $idClass;
+    public $idClass;
 
     /**
      * Aggregate class.
@@ -45,14 +45,14 @@ final class AggregateCreated
      *
      * @var string
      */
-    public string $aggregateClass;
+    public $aggregateClass;
 
     /**
      * Operation datetime.
      *
      * @var \DateTimeImmutable
      */
-    public \DateTimeImmutable $datetime;
+    public $datetime;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass

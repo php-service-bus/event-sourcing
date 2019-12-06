@@ -26,14 +26,18 @@ use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
  */
 final class Snapshotter
 {
-    private SnapshotStore $store;
+    /** @var SnapshotStore  */
+    private $store;
 
     /**
      * Snapshot generation trigger.
+     *
+     * @var SnapshotTrigger
      */
-    private SnapshotTrigger $trigger;
+    private $trigger;
 
-    private LoggerInterface $logger;
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(
         SnapshotStore $store,

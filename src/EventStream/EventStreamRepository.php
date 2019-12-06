@@ -37,13 +37,17 @@ final class EventStreamRepository
 
     public const REVERT_MODE_DELETE = 2;
 
-    private EventStreamStore $store;
+    /** @var EventStreamStore */
+    private $store;
 
-    private EventSerializer $serializer;
+    /** @var EventSerializer */
+    private $serializer;
 
-    private Snapshotter $snapshotter;
+    /** @var Snapshotter */
+    private $snapshotter;
 
-    private LoggerInterface $logger;
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(
         EventStreamStore $store,

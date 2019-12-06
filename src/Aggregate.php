@@ -38,13 +38,17 @@ abstract class Aggregate
 
     /**
      * Aggregate identifier.
+     *
+     * @var AggregateId
      */
-    private AggregateId $id;
+    private $id;
 
     /**
      * Current version.
+     *
+     * @var int
      */
-    private int $version = self::START_PLAYHEAD_INDEX;
+    private $version = self::START_PLAYHEAD_INDEX;
 
     /**
      * List of applied aggregate events.
@@ -53,19 +57,21 @@ abstract class Aggregate
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
-    private array
-
- $events;
+    private $events;
 
     /**
      * Created at datetime.
+     *
+     * @var \DateTimeImmutable
      */
-    private \DateTimeImmutable $createdAt;
+    private $createdAt;
 
     /**
      * Closed at datetime.
+     *
+     * @var \DateTimeImmutable|null
      */
-    private ?\DateTimeImmutable $closedAt = null;
+    private $closedAt = null;
 
     final public function __construct(AggregateId $id)
     {

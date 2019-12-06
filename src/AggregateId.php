@@ -22,8 +22,10 @@ abstract class AggregateId
 {
     /**
      * Identifier.
+     *
+     * @var string
      */
-    private string $id;
+    private $id;
 
     /**
      * @return static

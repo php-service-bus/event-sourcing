@@ -31,7 +31,8 @@ final class SqlIndexStore implements IndexStore
 {
     private const TABLE_NAME = 'event_sourcing_indexes';
 
-    private DatabaseAdapter $adapter;
+    /** @var DatabaseAdapter  */
+    private $adapter;
 
     public function __construct(DatabaseAdapter $adapter)
     {

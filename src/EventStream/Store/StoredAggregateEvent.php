@@ -21,35 +21,47 @@ final class StoredAggregateEvent
 {
     /**
      * Event ID.
+     *
+     * @var string
      */
-    public string $eventId;
+    public $eventId;
 
     /**
      * Playhead position.
+     *
+     * @var int
      */
-    public int $playheadPosition;
+    public $playheadPosition;
 
     /**
      * Serialized event data.
+     *
+     * @var string
      */
-    public string $eventData;
+    public $eventData;
 
     /**
      * Event class.
      *
      * @psalm-var class-string
+     *
+     * @var string
      */
-    public string $eventClass;
+    public $eventClass;
 
     /**
      * Occured at datetime.
+     *
+     * @var string
      */
-    public string $occuredAt;
+    public $occuredAt;
 
     /**
      * Recorded at datetime.
+     *
+     * @var string|null
      */
-    public ?string $recordedAt = null;
+    public $recordedAt = null;
 
     /**
      * @psalm-param class-string $eventClass

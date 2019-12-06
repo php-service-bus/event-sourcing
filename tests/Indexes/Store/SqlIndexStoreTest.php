@@ -27,9 +27,11 @@ use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
  */
 final class SqlIndexStoreTest extends TestCase
 {
-    private static DatabaseAdapter $adapter;
+    /** @var DatabaseAdapter|null */
+    private static $adapter = null;
 
-    private SqlIndexStore $indexStore;
+    /** @var SqlIndexStore */
+    private $indexStore;
 
     /**
      * {@inheritdoc}
@@ -92,18 +94,18 @@ final class SqlIndexStoreTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function save(): void
+    public function save(): \Generator
     {
         $index = new IndexKey(__CLASS__, 'testKey');
         $value = new IndexValue(__METHOD__);
 
         /** @var int $count */
-        $count = wait($this->indexStore->add($index, $value));
+        $count = yield $this->indexStore->add($index, $value);
 
         static::assertSame(1, $count);
 
         /** @var IndexValue|null $storedValue */
-        $storedValue = wait($this->indexStore->find($index));
+        $storedValue = yield $this->indexStore->find($index);
 
         static::assertNotNull($storedValue);
         static::assertSame($value->value, $storedValue->value);
@@ -114,15 +116,15 @@ final class SqlIndexStoreTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function saveDuplicate(): void
+    public function saveDuplicate(): \Generator
     {
         $this->expectException(UniqueConstraintViolationCheckFailed::class);
 
         $index = new IndexKey(__CLASS__, 'testKey');
         $value = new IndexValue(__METHOD__);
 
-        wait($this->indexStore->add($index, $value));
-        wait($this->indexStore->add($index, $value));
+        yield $this->indexStore->add($index, $value);
+        yield $this->indexStore->add($index, $value);
     }
 
     /**
@@ -132,19 +134,19 @@ final class SqlIndexStoreTest extends TestCase
      *
      * @return void
      */
-    public function update(): void
+    public function update(): \Generator
     {
         $index = new IndexKey(__CLASS__, 'testKey');
         $value = new IndexValue(__METHOD__);
 
-        wait($this->indexStore->add($index, $value));
+        yield $this->indexStore->add($index, $value);
 
         $newValue = new IndexValue('qwerty');
 
-        wait($this->indexStore->update($index, $newValue));
+        yield $this->indexStore->update($index, $newValue);
 
         /** @var IndexValue|null $storedValue */
-        $storedValue = wait($this->indexStore->find($index));
+        $storedValue = yield $this->indexStore->find($index);
 
         static::assertNotNull($storedValue);
         static::assertSame($newValue->value, $storedValue->value);
@@ -155,13 +157,13 @@ final class SqlIndexStoreTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function remove(): void
+    public function remove(): \Generator
     {
         $index = new IndexKey(__CLASS__, 'testKey');
         $value = new IndexValue(__METHOD__);
 
-        wait($this->indexStore->add($index, $value));
-        wait($this->indexStore->delete($index));
+        yield $this->indexStore->add($index, $value);
+        yield $this->indexStore->delete($index);
 
         static::assertNull(wait($this->indexStore->find($index)));
     }

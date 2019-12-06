@@ -40,7 +40,8 @@ final class SqlEventStreamStore implements EventStreamStore
 
     private const STREAM_EVENTS_TABLE = 'event_store_stream_events';
 
-    private DatabaseAdapter $adapter;
+    /** @var DatabaseAdapter */
+    private $adapter;
 
     public function __construct(DatabaseAdapter $adapter)
     {
@@ -257,7 +258,7 @@ final class SqlEventStreamStore implements EventStreamStore
          *
          * @var \ServiceBus\Storage\Common\ResultSet $resultSet
          */
-        $resultSet =  yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
+        $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
 
         /**
          * @psalm-var      array<string, string>|null $data

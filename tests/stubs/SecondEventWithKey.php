@@ -17,7 +17,8 @@ namespace ServiceBus\EventSourcing\Tests\stubs;
  */
 final class SecondEventWithKey
 {
-    private string $key;
+    /** @var string  */
+    private $key;
 
     public function __construct(string $key)
     {

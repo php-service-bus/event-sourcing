@@ -22,9 +22,11 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty;
  */
 final class IndexKey
 {
-    public string $indexName;
+    /** @var string  */
+    public $indexName;
 
-    public string $valueKey;
+    /** @var string  */
+    public $valueKey;
 
     /**
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\IndexNameCantBeEmpty

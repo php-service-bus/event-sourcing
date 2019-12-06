@@ -19,9 +19,11 @@ use ServiceBus\EventSourcing\Aggregate;
  */
 final class Snapshot
 {
-    public Aggregate $aggregate;
+    /** @var Aggregate  */
+    public $aggregate;
 
-    public int $version;
+    /** @var int  */
+    public $version;
 
     public function __construct(Aggregate $aggregate, int $version)
     {
