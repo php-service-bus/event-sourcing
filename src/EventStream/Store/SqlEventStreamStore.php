@@ -83,34 +83,29 @@ final class SqlEventStreamStore implements EventStreamStore
         int $fromVersion = Aggregate::START_PLAYHEAD_INDEX,
         ?int $toVersion = null
     ): Promise {
-        $adapter = $this->adapter;
-
         return call(
-            static function(AggregateId $id, int $fromVersion, ?int $toVersion) use ($adapter): \Generator
+            function() use ($id, $fromVersion, $toVersion): \Generator
             {
                 $aggregateEventStream = null;
 
                 /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($adapter, $id);
+                $streamData = yield from self::doLoadStream($this->adapter, $id);
 
                 if (null !== $streamData)
                 {
                     /** @var array<int, array>|null $streamEventsData */
                     $streamEventsData = yield from self::doLoadStreamEvents(
-                        $adapter,
+                        $this->adapter,
                         (string) $streamData['id'],
                         $fromVersion,
                         $toVersion
                     );
 
-                    $aggregateEventStream = self::restoreEventStream($adapter, $streamData, $streamEventsData);
+                    $aggregateEventStream = self::restoreEventStream($this->adapter, $streamData, $streamEventsData);
                 }
 
                 return $aggregateEventStream;
-            },
-            $id,
-            $fromVersion,
-            $toVersion
+            }
         );
     }
 
@@ -119,10 +114,8 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function close(AggregateId $id): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(AggregateId $id) use ($adapter): \Generator
+            function() use ($id): \Generator
             {
                 $updateQuery = updateQuery(self::STREAMS_TABLE, ['closed_at' => \date('Y-m-d H:i:s')])
                     ->where(equalsCriteria('id', $id->toString()))
@@ -131,9 +124,8 @@ final class SqlEventStreamStore implements EventStreamStore
                 $compiledQuery = $updateQuery->compile();
 
                 /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
-                yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
-            },
-            $id
+                yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+            }
         );
     }
 
@@ -142,13 +134,11 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(AggregateId $id, int $toVersion, bool $force) use ($adapter): \Generator
+            function() use ($id, $toVersion, $force): \Generator
             {
                 /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($adapter, $id);
+                $streamData = yield from self::doLoadStream($this->adapter, $id);
 
                 if (null === $streamData)
                 {
@@ -160,7 +150,7 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 try
                 {
-                    yield $adapter->transactional(
+                    yield $this->adapter->transactional(
                         static function(QueryExecutor $queryExecutor) use ($force, $streamId, $toVersion): \Generator
                         {
                             true === $force
@@ -180,10 +170,7 @@ final class SqlEventStreamStore implements EventStreamStore
                         $exception
                     );
                 }
-            },
-            $id,
-            $toVersion,
-            $force
+            }
         );
     }
 

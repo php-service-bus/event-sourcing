@@ -15,7 +15,7 @@ namespace ServiceBus\EventSourcing\EventStream;
 /**
  * Applied to aggregate event.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class AggregateEvent
 {

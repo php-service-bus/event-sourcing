@@ -12,13 +12,12 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Contract;
 
-use function ServiceBus\Common\now;
 use ServiceBus\EventSourcing\AggregateId;
 
 /**
  * New aggregate created.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class AggregateCreated
 {
@@ -57,7 +56,7 @@ final class AggregateCreated
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
      */
-    public function __construct(AggregateId $id, string $aggregateClass)
+    public function __construct(AggregateId $id, string $aggregateClass, \DateTimeImmutable $datetime)
     {
         /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $idClass */
         $idClass = (string) \get_class($id);
@@ -65,6 +64,6 @@ final class AggregateCreated
         $this->id             = $id->toString();
         $this->idClass        = $idClass;
         $this->aggregateClass = $aggregateClass;
-        $this->datetime       = now();
+        $this->datetime       = $datetime;
     }
 }

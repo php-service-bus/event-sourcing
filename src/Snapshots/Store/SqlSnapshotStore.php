@@ -45,10 +45,8 @@ final class SqlSnapshotStore implements SnapshotStore
      */
     public function save(Snapshot $snapshot): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(Snapshot $snapshot) use ($adapter): \Generator
+            function() use ($snapshot): \Generator
             {
                 $insertQuery = insertQuery(self::TABLE_NAME, [
                     'id'                 => $snapshot->aggregate->id()->toString(),
@@ -62,9 +60,8 @@ final class SqlSnapshotStore implements SnapshotStore
                 $compiledQuery = $insertQuery->compile();
 
                 /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
-                yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
-            },
-            $snapshot
+                yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+            }
         );
     }
 
@@ -73,10 +70,8 @@ final class SqlSnapshotStore implements SnapshotStore
      */
     public function load(AggregateId $id): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(AggregateId $id) use ($adapter): \Generator
+            function() use ($id): \Generator
             {
                 $storedSnapshot = null;
 
@@ -86,7 +81,7 @@ final class SqlSnapshotStore implements SnapshotStore
                 ];
 
                 /** @var \ServiceBus\Storage\Common\ResultSet $resultSet */
-                $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
+                $resultSet = yield find($this->adapter, self::TABLE_NAME, $criteria);
 
                 /**
                  * @psalm-var      array{
@@ -106,9 +101,9 @@ final class SqlSnapshotStore implements SnapshotStore
                 {
                     $payload = $data['payload'];
 
-                    if ($adapter instanceof BinaryDataDecoder)
+                    if ($this->adapter instanceof BinaryDataDecoder)
                     {
-                        $payload = $adapter->unescapeBinary($payload);
+                        $payload = $this->adapter->unescapeBinary($payload);
                     }
 
                     $snapshotContent = (string) \base64_decode($payload);
@@ -121,8 +116,7 @@ final class SqlSnapshotStore implements SnapshotStore
                 }
 
                 return $storedSnapshot;
-            },
-            $id
+            }
         );
     }
 
@@ -131,19 +125,16 @@ final class SqlSnapshotStore implements SnapshotStore
      */
     public function remove(AggregateId $id): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(AggregateId $id) use ($adapter): \Generator
+            function() use ($id): \Generator
             {
                 $criteria = [
                     equalsCriteria('id', $id->toString()),
                     equalsCriteria('aggregate_id_class', \get_class($id)),
                 ];
 
-                yield remove($adapter, self::TABLE_NAME, $criteria);
-            },
-            $id
+                yield remove($this->adapter, self::TABLE_NAME, $criteria);
+            }
         );
     }
 }

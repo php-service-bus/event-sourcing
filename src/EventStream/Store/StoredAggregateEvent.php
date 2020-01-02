@@ -15,7 +15,7 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 /**
  * Aggregate event data.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class StoredAggregateEvent
 {

@@ -18,7 +18,7 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType;
 /**
  * The value stored in the index.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class IndexValue
 {

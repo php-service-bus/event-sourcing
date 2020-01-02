@@ -30,7 +30,7 @@ final class DefaultEventSerializerTest extends TestCase
     public function unserializeWrongMessageType(): void
     {
         $this->expectException(SerializeEventFailed::class);
-        $this->expectExceptionMessage('JSON unserialize failed: Syntax error');
+        $this->expectExceptionMessage('Message deserialization failed: Syntax error');
 
         $serializer = new DefaultEventSerializer(
             new SymfonyMessageSerializer()

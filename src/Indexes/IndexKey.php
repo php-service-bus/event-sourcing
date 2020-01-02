@@ -18,7 +18,7 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty;
 /**
  * The key for the value stored in the index.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class IndexKey
 {

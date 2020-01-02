@@ -15,6 +15,7 @@ namespace ServiceBus\EventSourcing\Tests\EventStream;
 use function Amp\Promise\wait;
 use function ServiceBus\Common\invokeReflectionMethod;
 use function ServiceBus\Storage\Sql\fetchOne;
+use Amp\Loop;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
@@ -145,35 +146,40 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function flow(): \Generator
+    public function flow(): void
     {
-        $aggregate = new TestAggregate(TestAggregateId::new());
+        Loop::run(
+            function(): \Generator
+            {
+                $aggregate = new TestAggregate(TestAggregateId::new());
 
-        $events = yield $this->eventStreamRepository->save($aggregate);
+                $events = yield $this->eventStreamRepository->save($aggregate);
 
-        static::assertCount(1, $events);
+                static::assertCount(1, $events);
 
-        /** @var AggregateCreated $event */
-        $event = \end($events);
+                /** @var AggregateCreated $event */
+                $event = \end($events);
 
-        static::assertInstanceOf(AggregateCreated::class, $event);
+                static::assertInstanceOf(AggregateCreated::class, $event);
 
-        $loadedAggregate = yield $this->eventStreamRepository->load($aggregate->id());
+                $loadedAggregate = yield $this->eventStreamRepository->load($aggregate->id());
 
-        static::assertNotNull($loadedAggregate);
-        static::assertInstanceOf(Aggregate::class, $loadedAggregate);
+                static::assertNotNull($loadedAggregate);
+                static::assertInstanceOf(Aggregate::class, $loadedAggregate);
 
-        /** @var Aggregate $loadedAggregate */
-        static::assertSame(1, $loadedAggregate->version());
+                /** @var Aggregate $loadedAggregate */
+                static::assertSame(1, $loadedAggregate->version());
 
-        /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $stream */
-        $stream = invokeReflectionMethod($loadedAggregate, 'makeStream');
+                /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $stream */
+                $stream = invokeReflectionMethod($loadedAggregate, 'makeStream');
 
-        static::assertCount(0, $stream->events);
+                static::assertCount(0, $stream->events);
 
-        $events = yield $this->eventStreamRepository->update($loadedAggregate);
+                $events = yield $this->eventStreamRepository->update($loadedAggregate);
 
-        static::assertCount(0, $events);
+                static::assertCount(0, $events);
+            }
+        );
     }
 
     /**
@@ -181,34 +187,39 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function loadWithSnapshot(): \Generator
+    public function loadWithSnapshot(): void
     {
-        $aggregate = new TestAggregate(TestAggregateId::new());
+        Loop::run(
+            function(): \Generator
+            {
+                $aggregate = new TestAggregate(TestAggregateId::new());
 
-        $events = yield $this->eventStreamRepository->save($aggregate);
+                $events = yield $this->eventStreamRepository->save($aggregate);
 
-        static::assertCount(1, $events);
+                static::assertCount(1, $events);
 
-        /** first action */
-        $aggregate->firstAction('qwerty');
+                /** first action */
+                $aggregate->firstAction('qwerty');
 
-        $events = yield $this->eventStreamRepository->update($aggregate);
+                $events = yield $this->eventStreamRepository->update($aggregate);
 
-        static::assertCount(1, $events);
+                static::assertCount(1, $events);
 
-        /** second action  */
-        $aggregate->secondAction('root');
+                /** second action  */
+                $aggregate->secondAction('root');
 
-        $events = yield $this->eventStreamRepository->update($aggregate);
+                $events = yield $this->eventStreamRepository->update($aggregate);
 
-        static::assertCount(1, $events);
+                static::assertCount(1, $events);
 
-        /** assert values */
-        static::assertNotNull($aggregate->firstValue());
-        static::assertNotNull($aggregate->secondValue());
+                /** assert values */
+                static::assertNotNull($aggregate->firstValue());
+                static::assertNotNull($aggregate->secondValue());
 
-        static::assertSame('qwerty', $aggregate->firstValue());
-        static::assertSame('root', $aggregate->secondValue());
+                static::assertSame('qwerty', $aggregate->firstValue());
+                static::assertSame('root', $aggregate->secondValue());
+            }
+        );
     }
 
     /**
@@ -216,14 +227,19 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function saveDuplicateAggregate(): \Generator
+    public function saveDuplicateAggregate(): void
     {
         $this->expectException(UniqueConstraintViolationCheckFailed::class);
 
-        $id = TestAggregateId::new();
+        Loop::run(
+            function(): \Generator
+            {
+                $id = TestAggregateId::new();
 
-        yield $this->eventStreamRepository->save(new TestAggregate($id));
-        yield $this->eventStreamRepository->save(new TestAggregate($id));
+                yield $this->eventStreamRepository->save(new TestAggregate($id));
+                yield $this->eventStreamRepository->save(new TestAggregate($id));
+            }
+        );
     }
 
     /**
@@ -231,31 +247,36 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function loadWithoutSnapshot(): \Generator
+    public function loadWithoutSnapshot(): void
     {
-        $repository = new EventStreamRepository(
-            $this->eventStore,
-            new Snapshotter(
-                $this->snapshotStore,
-                new SnapshotVersionTrigger(100500)
-            ),
-            new DefaultEventSerializer(
-                new SymfonyMessageSerializer()
-            )
+        Loop::run(
+            function(): \Generator
+            {
+                $repository = new EventStreamRepository(
+                    $this->eventStore,
+                    new Snapshotter(
+                        $this->snapshotStore,
+                        new SnapshotVersionTrigger(100500)
+                    ),
+                    new DefaultEventSerializer(
+                        new SymfonyMessageSerializer()
+                    )
+                );
+
+                $id = TestAggregateId::new();
+
+                $aggregate = new TestAggregate($id);
+
+                yield $repository->save($aggregate);
+
+                yield $this->snapshotStore->remove($id);
+
+                /** @var \ServiceBus\EventSourcing\Aggregate|null $aggregate */
+                $aggregate = yield $repository->load($id);
+
+                static::assertNotNull($aggregate);
+            }
         );
-
-        $id = TestAggregateId::new();
-
-        $aggregate = new TestAggregate($id);
-
-        yield $repository->save($aggregate);
-
-        yield $this->snapshotStore->remove($id);
-
-        /** @var \ServiceBus\EventSourcing\Aggregate|null $aggregate */
-        $aggregate = yield $repository->load($id);
-
-        static::assertNotNull($aggregate);
     }
 
     /**
@@ -263,44 +284,49 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function successSoftDeleteRevert(): \Generator
+    public function successSoftDeleteRevert(): void
     {
-        $aggregate = new TestAggregate(TestAggregateId::new());
+        Loop::run(
+            function(): \Generator
+            {
+                $aggregate = new TestAggregate(TestAggregateId::new());
 
-        yield $this->eventStreamRepository->save($aggregate);
+                yield $this->eventStreamRepository->save($aggregate);
 
-        foreach (\range(1, 6) as $item)
-        {
-            $aggregate->firstAction($item + 1 . ' event');
-        }
+                foreach (\range(1, 6) as $item)
+                {
+                    $aggregate->firstAction($item + 1 . ' event');
+                }
 
-        /** 7 aggregate version */
-        yield $this->eventStreamRepository->update($aggregate);
+                /** 7 aggregate version */
+                yield $this->eventStreamRepository->update($aggregate);
 
-        /** 7 aggregate version */
-        static::assertSame(7, $aggregate->version());
-        static::assertSame('7 event', $aggregate->firstValue());
+                /** 7 aggregate version */
+                static::assertSame(7, $aggregate->version());
+                static::assertSame('7 event', $aggregate->firstValue());
 
-        /** @var TestAggregate $aggregate */
-        $aggregate = yield $this->eventStreamRepository->revert(
-            $aggregate,
-            5,
-            EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                /** @var TestAggregate $aggregate */
+                $aggregate = yield $this->eventStreamRepository->revert(
+                    $aggregate,
+                    5,
+                    EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                );
+
+                static::assertSame(5, $aggregate->version());
+                static::assertSame('5 event', $aggregate->firstValue());
+
+                foreach (\range(1, 6) as $item)
+                {
+                    $aggregate->firstAction($item + 5 . ' new event');
+                }
+
+                /** 7 aggregate version */
+                yield $this->eventStreamRepository->update($aggregate);
+
+                static::assertSame(11, $aggregate->version());
+                static::assertSame('11 new event', $aggregate->firstValue());
+            }
         );
-
-        static::assertSame(5, $aggregate->version());
-        static::assertSame('5 event', $aggregate->firstValue());
-
-        foreach (\range(1, 6) as $item)
-        {
-            $aggregate->firstAction($item + 5 . ' new event');
-        }
-
-        /** 7 aggregate version */
-        yield $this->eventStreamRepository->update($aggregate);
-
-        static::assertSame(11, $aggregate->version());
-        static::assertSame('11 new event', $aggregate->firstValue());
     }
 
     /**
@@ -308,40 +334,45 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function successHardDeleteRevert(): \Generator
+    public function successHardDeleteRevert(): void
     {
-        $aggregate = new TestAggregate(TestAggregateId::new());
+        Loop::run(
+            function(): \Generator
+            {
+                $aggregate = new TestAggregate(TestAggregateId::new());
 
-        yield $this->eventStreamRepository->save($aggregate);
+                yield $this->eventStreamRepository->save($aggregate);
 
-        foreach (\range(1, 6) as $item)
-        {
-            $aggregate->firstAction($item + 1 . ' event');
-        }
+                foreach (\range(1, 6) as $item)
+                {
+                    $aggregate->firstAction($item + 1 . ' event');
+                }
 
-        /** 7 aggregate version */
-        yield $this->eventStreamRepository->update($aggregate);
+                /** 7 aggregate version */
+                yield $this->eventStreamRepository->update($aggregate);
 
-        /** 7 aggregate version */
-        static::assertSame(7, $aggregate->version());
-        static::assertSame('7 event', $aggregate->firstValue());
+                /** 7 aggregate version */
+                static::assertSame(7, $aggregate->version());
+                static::assertSame('7 event', $aggregate->firstValue());
 
-        /** @var TestAggregate $aggregate */
-        $aggregate = yield $this->eventStreamRepository->revert(
-            $aggregate,
-            5,
-            EventStreamRepository::REVERT_MODE_DELETE
+                /** @var TestAggregate $aggregate */
+                $aggregate = yield $this->eventStreamRepository->revert(
+                    $aggregate,
+                    5,
+                    EventStreamRepository::REVERT_MODE_DELETE
+                );
+
+                /** 7 aggregate version */
+                static::assertSame(5, $aggregate->version());
+                static::assertSame('5 event', $aggregate->firstValue());
+
+                $eventsCount = yield fetchOne(
+                    yield self::$adapter->execute('SELECT COUNT(id) as cnt FROM event_store_stream_events')
+                );
+
+                static::assertSame(5, $eventsCount['cnt']);
+            }
         );
-
-        /** 7 aggregate version */
-        static::assertSame(5, $aggregate->version());
-        static::assertSame('5 event', $aggregate->firstValue());
-
-        $eventsCount = yield fetchOne(
-            yield self::$adapter->execute('SELECT COUNT(id) as cnt FROM event_store_stream_events')
-        );
-
-        static::assertSame(5, $eventsCount['cnt']);
     }
 
     /**
@@ -349,11 +380,16 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function revertUnknownStream(): \Generator
+    public function revertUnknownStream(): void
     {
         $this->expectException(EventStreamDoesNotExist::class);
 
-        yield $this->eventStreamRepository->revert(new TestAggregate(TestAggregateId::new()), 20);
+        Loop::run(
+            function(): \Generator
+            {
+                yield $this->eventStreamRepository->revert(new TestAggregate(TestAggregateId::new()), 20);
+            }
+        );
     }
 
     /**
@@ -361,32 +397,37 @@ final class EventStreamRepositoryTest extends TestCase
      *
      * @throws \Throwable
      */
-    public function revertWithVersionConflict(): \Generator
+    public function revertWithVersionConflict(): void
     {
         $this->expectException(EventStreamIntegrityCheckFailed::class);
 
-        $aggregate = new TestAggregate(TestAggregateId::new());
+        Loop::run(
+            function(): \Generator
+            {
+                $aggregate = new TestAggregate(TestAggregateId::new());
 
-        $aggregate->firstAction('qwerty');
-        $aggregate->firstAction('root');
-        $aggregate->firstAction('qwertyRoot');
+                $aggregate->firstAction('qwerty');
+                $aggregate->firstAction('root');
+                $aggregate->firstAction('qwertyRoot');
 
-        yield $this->eventStreamRepository->save($aggregate);
+                yield $this->eventStreamRepository->save($aggregate);
 
-        /** @var TestAggregate $aggregate */
-        $aggregate = yield$this->eventStreamRepository->revert(
-            $aggregate,
-            2,
-            EventStreamRepository::REVERT_MODE_SOFT_DELETE
-        );
+                /** @var TestAggregate $aggregate */
+                $aggregate = yield$this->eventStreamRepository->revert(
+                    $aggregate,
+                    2,
+                    EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                );
 
-        $aggregate->firstAction('abube');
+                $aggregate->firstAction('abube');
 
-        yield $this->eventStreamRepository->update($aggregate);
-        yield $this->eventStreamRepository->revert(
-            $aggregate,
-            3,
-            EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                yield $this->eventStreamRepository->update($aggregate);
+                yield $this->eventStreamRepository->revert(
+                    $aggregate,
+                    3,
+                    EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                );
+            }
         );
     }
 }

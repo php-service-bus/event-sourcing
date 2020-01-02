@@ -56,23 +56,19 @@ final class Snapshotter
      */
     public function load(AggregateId $id): Promise
     {
-        $store  = $this->store;
-        $logger = $this->logger;
-
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            static function(AggregateId $id) use ($store, $logger): \Generator
+            function() use ($id): \Generator
             {
                 $snapshot = null;
 
                 try
                 {
                     /** @var Snapshot|null $snapshot */
-                    $snapshot = yield $store->load($id);
+                    $snapshot = yield $this->store->load($id);
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->error(
+                    $this->logger->error(
                         'Error loading snapshot of aggregate with identifier "{aggregateIdClass}:{aggregateId}"',
                         [
                             'aggregateIdClass' => \get_class($id),
@@ -84,8 +80,7 @@ final class Snapshotter
                 }
 
                 return $snapshot;
-            },
-            $id
+            }
         );
     }
 
@@ -94,23 +89,19 @@ final class Snapshotter
      */
     public function store(Snapshot $snapshot): Promise
     {
-        $store  = $this->store;
-        $logger = $this->logger;
-
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            static function(Snapshot $snapshot) use ($store, $logger): \Generator
+            function() use ($snapshot): \Generator
             {
                 $id = $snapshot->aggregate->id();
 
                 try
                 {
-                    yield $store->remove($id);
-                    yield $store->save($snapshot);
+                    yield $this->store->remove($id);
+                    yield $this->store->save($snapshot);
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->error(
+                    $this->logger->error(
                         'Error saving snapshot of aggregate with identifier "{aggregateIdClass}:{aggregateId}"',
                         [
                             'aggregateIdClass' => \get_class($id),
@@ -124,8 +115,7 @@ final class Snapshotter
                 {
                     unset($id);
                 }
-            },
-            $snapshot
+            }
         );
     }
 

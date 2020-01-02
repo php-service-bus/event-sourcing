@@ -74,18 +74,13 @@ final class EventStreamRepository
      */
     public function load(AggregateId $id): Promise
     {
-        $store      = $this->store;
-        $serializer = $this->serializer;
-        $snaphotter = $this->snapshotter;
-        $logger     = $this->logger;
-
         return call(
-            static function(AggregateId $id) use ($store, $serializer, $snaphotter, $logger): \Generator
+            function() use ($id): \Generator
             {
                 $idValue = $id->toString();
                 $idClass = \get_class($id);
 
-                $logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}"', [
+                $this->logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}"', [
                     'aggregateIdClass' => $idClass,
                     'aggregateId'      => $idValue,
                 ]);
@@ -96,14 +91,14 @@ final class EventStreamRepository
                     $fromStreamVersion = Aggregate::START_PLAYHEAD_INDEX;
 
                     /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
-                    $loadedSnapshot = yield $snaphotter->load($id);
+                    $loadedSnapshot = yield $this->snapshotter->load($id);
 
                     if (null !== $loadedSnapshot)
                     {
                         $aggregate         = $loadedSnapshot->aggregate;
                         $fromStreamVersion = $aggregate->version() + 1;
 
-                        $logger->debug(
+                        $this->logger->debug(
                             'Found a snapshot of the state of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}" on version "{aggregateVersion}"',
                             [
                                 'aggregateIdClass' => $idClass,
@@ -114,15 +109,15 @@ final class EventStreamRepository
                     }
 
                     /** @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null $storedEventStream */
-                    $storedEventStream = yield $store->load($id, $fromStreamVersion);
+                    $storedEventStream = yield $this->store->load($id, $fromStreamVersion);
 
-                    $aggregate = self::restoreStream($serializer, $aggregate, $storedEventStream);
+                    $aggregate = $this->restoreStream($aggregate, $storedEventStream);
 
                     return $aggregate;
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}" failed', [
+                    $this->logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}" failed', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
                         'throwableMessage' => $throwable->getMessage(),
@@ -136,8 +131,7 @@ final class EventStreamRepository
                     /** @psalm-suppress PossiblyUndefinedVariable */
                     unset($storedEventStream, $loadedSnapshot, $fromStreamVersion);
                 }
-            },
-            $id
+            }
         );
     }
 
@@ -155,20 +149,15 @@ final class EventStreamRepository
      */
     public function save(Aggregate $aggregate): Promise
     {
-        $store      = $this->store;
-        $serializer = $this->serializer;
-        $snaphotter = $this->snapshotter;
-        $logger     = $this->logger;
-
         return call(
-            static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
+            function() use ($aggregate): \Generator
             {
                 $id = $aggregate->id();
 
                 $idValue = $id->toString();
                 $idClass = \get_class($id);
 
-                $logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}"', [
+                $this->logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}"', [
                     'aggregateIdClass' => $idClass,
                     'aggregateId'      => $idValue,
                 ]);
@@ -180,13 +169,13 @@ final class EventStreamRepository
                      *
                      * @var object[] $raisedEvents
                      */
-                    $raisedEvents = yield from self::doStore($serializer, $store, $snaphotter, $aggregate, true);
+                    $raisedEvents = yield from $this->doStore($aggregate, true);
 
                     return $raisedEvents;
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}" failed', [
+                    $this->logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}" failed', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
                         'throwableMessage' => $throwable->getMessage(),
@@ -195,8 +184,7 @@ final class EventStreamRepository
 
                     throw $throwable;
                 }
-            },
-            $aggregate
+            }
         );
     }
 
@@ -213,20 +201,15 @@ final class EventStreamRepository
      */
     public function update(Aggregate $aggregate): Promise
     {
-        $store      = $this->store;
-        $serializer = $this->serializer;
-        $snaphotter = $this->snapshotter;
-        $logger     = $this->logger;
-
         return call(
-            static function(Aggregate $aggregate) use ($store, $serializer, $snaphotter, $logger): \Generator
+            function() use ($aggregate): \Generator
             {
                 $id = $aggregate->id();
 
                 $idValue = $id->toString();
                 $idClass = \get_class($id);
 
-                $logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}"', [
+                $this->logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}"', [
                     'aggregateIdClass' => $idClass,
                     'aggregateId'      => $idValue,
                 ]);
@@ -238,13 +221,13 @@ final class EventStreamRepository
                      *
                      * @var object[] $raisedEvents
                      */
-                    $raisedEvents = yield from self::doStore($serializer, $store, $snaphotter, $aggregate, false);
+                    $raisedEvents = yield from $this->doStore($aggregate, false);
 
                     return $raisedEvents;
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}', [
+                    $this->logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
                         'throwableMessage' => $throwable->getMessage(),
@@ -253,8 +236,7 @@ final class EventStreamRepository
 
                     throw $throwable;
                 }
-            },
-            $aggregate
+            }
         );
     }
 
@@ -276,20 +258,15 @@ final class EventStreamRepository
      */
     public function revert(Aggregate $aggregate, int $toVersion, int $mode = self::REVERT_MODE_SOFT_DELETE): Promise
     {
-        $store      = $this->store;
-        $serializer = $this->serializer;
-        $snaphotter = $this->snapshotter;
-        $logger     = $this->logger;
-
         return call(
-            static function(Aggregate $aggregate, int $toVersion, int $mode) use ($store, $serializer, $snaphotter, $logger): \Generator
+            function() use ($aggregate, $toVersion, $mode): \Generator
             {
                 $id = $aggregate->id();
 
                 $idValue = $id->toString();
                 $idClass = \get_class($id);
 
-                $logger->debug('Rollback of aggregate with identifier "{aggregateIdClass}:{aggregateId}" to version "{aggregateVersion}"', [
+                $this->logger->debug('Rollback of aggregate with identifier "{aggregateIdClass}:{aggregateId}" to version "{aggregateVersion}"', [
                     'aggregateIdClass' => $idClass,
                     'aggregateId'      => $idValue,
                     'aggregateVersion' => $toVersion,
@@ -297,21 +274,21 @@ final class EventStreamRepository
 
                 try
                 {
-                    yield $store->revert($aggregate->id(), $toVersion, self::REVERT_MODE_DELETE === $mode);
+                    yield $this->store->revert($aggregate->id(), $toVersion, self::REVERT_MODE_DELETE === $mode);
 
                     /** @var StoredAggregateEventStream|null $storedEventStream */
-                    $storedEventStream = yield $store->load($aggregate->id());
+                    $storedEventStream = yield $this->store->load($aggregate->id());
 
                     /** @var Aggregate $aggregate */
-                    $aggregate = self::restoreStream($serializer, null, $storedEventStream);
+                    $aggregate = $this->restoreStream(null, $storedEventStream);
 
-                    yield $snaphotter->store(new Snapshot($aggregate, $aggregate->version()));
+                    yield $this->snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
 
                     return $aggregate;
                 }
                 catch (\Throwable $throwable)
                 {
-                    $logger->debug('Error when rolling back the version of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}', [
+                    $this->logger->debug('Error when rolling back the version of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
                         'throwableMessage' => $throwable->getMessage(),
@@ -325,10 +302,7 @@ final class EventStreamRepository
                     /** @psalm-suppress PossiblyUndefinedVariable */
                     unset($storedEventStream);
                 }
-            },
-            $aggregate,
-            $toVersion,
-            $mode
+            }
         );
     }
 
@@ -340,32 +314,27 @@ final class EventStreamRepository
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      */
-    private static function doStore(
-        EventSerializer $eventSerializer,
-        EventStreamStore $eventStreamStore,
-        Snapshotter $snapshotter,
-        Aggregate $aggregate,
-        bool $isNew
-    ): \Generator {
+    private function doStore(Aggregate $aggregate, bool $isNew): \Generator
+    {
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $eventStream */
         $eventStream    = invokeReflectionMethod($aggregate, 'makeStream');
         $receivedEvents = $eventStream->originEvents;
 
-        $storedEventStream = streamToStoredRepresentation($eventSerializer, $eventStream);
+        $storedEventStream = streamToStoredRepresentation($this->serializer, $eventStream);
 
         /** @noinspection PhpUnnecessaryLocalVariableInspection */
         $promise = true === $isNew
-            ? $eventStreamStore->save($storedEventStream)
-            : $eventStreamStore->append($storedEventStream);
+            ? $this->store->save($storedEventStream)
+            : $this->store->append($storedEventStream);
 
         yield $promise;
 
         /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
-        $loadedSnapshot = yield $snapshotter->load($aggregate->id());
+        $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
 
-        if (true === $snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
+        if (true === $this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
         {
-            yield $snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
+            yield $this->snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
         }
 
         unset($eventStream, $loadedSnapshot, $storedEventStream);
@@ -380,17 +349,14 @@ final class EventStreamRepository
      * @throws \ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      */
-    private static function restoreStream(
-        EventSerializer $eventSerializer,
-        ?Aggregate $aggregate,
-        ?StoredAggregateEventStream $storedEventStream
-    ): ?Aggregate {
+    private function restoreStream(?Aggregate $aggregate, ?StoredAggregateEventStream $storedEventStream): ?Aggregate
+    {
         if (null === $storedEventStream)
         {
             return null;
         }
 
-        $eventStream = streamToDomainRepresentation($eventSerializer, $storedEventStream);
+        $eventStream = streamToDomainRepresentation($this->serializer, $storedEventStream);
 
         if (null === $aggregate)
         {

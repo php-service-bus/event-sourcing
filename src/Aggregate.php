@@ -13,6 +13,7 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing;
 
 use function ServiceBus\Common\datetimeInstantiator;
+use function ServiceBus\Common\now;
 use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
@@ -80,7 +81,7 @@ abstract class Aggregate
         $this->clearEvents();
 
         $this->raise(
-            new AggregateCreated($id, \get_class($this))
+            new AggregateCreated($id, \get_class($this), now())
         );
     }
 
@@ -137,7 +138,7 @@ abstract class Aggregate
         $aggregateClass = \get_class($this);
 
         $this->raise(
-            new AggregateClosed($this->id, $aggregateClass)
+            new AggregateClosed($this->id, $aggregateClass, now())
         );
     }
 

@@ -15,7 +15,7 @@ namespace ServiceBus\EventSourcing\Snapshots;
 use ServiceBus\EventSourcing\Aggregate;
 
 /**
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class Snapshot
 {

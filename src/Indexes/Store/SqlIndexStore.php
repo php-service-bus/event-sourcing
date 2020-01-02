@@ -31,7 +31,7 @@ final class SqlIndexStore implements IndexStore
 {
     private const TABLE_NAME = 'event_sourcing_indexes';
 
-    /** @var DatabaseAdapter  */
+    /** @var DatabaseAdapter */
     private $adapter;
 
     public function __construct(DatabaseAdapter $adapter)
@@ -44,10 +44,8 @@ final class SqlIndexStore implements IndexStore
      */
     public function find(IndexKey $indexKey): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(IndexKey $indexKey) use ($adapter): \Generator
+            function() use ($indexKey): \Generator
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
@@ -55,7 +53,7 @@ final class SqlIndexStore implements IndexStore
                 ];
 
                 /** @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
-                $resultSet = yield find($adapter, self::TABLE_NAME, $criteria);
+                $resultSet = yield find($this->adapter, self::TABLE_NAME, $criteria);
 
                 /** @var array<string, mixed>|null $result */
                 $result = yield fetchOne($resultSet);
@@ -64,8 +62,7 @@ final class SqlIndexStore implements IndexStore
                 {
                     return new  IndexValue($result['value_data']);
                 }
-            },
-            $indexKey
+            }
         );
     }
 
@@ -74,10 +71,8 @@ final class SqlIndexStore implements IndexStore
      */
     public function add(IndexKey $indexKey, IndexValue $value): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
+            function() use ($indexKey, $value): \Generator
             {
                 /** @var \Latitude\QueryBuilder\Query\InsertQuery $insertQuery */
                 $insertQuery = insertQuery(self::TABLE_NAME, [
@@ -93,12 +88,10 @@ final class SqlIndexStore implements IndexStore
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
-                $resultSet = yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
                 return $resultSet->affectedRows();
-            },
-            $indexKey,
-            $value
+            }
         );
     }
 
@@ -107,19 +100,16 @@ final class SqlIndexStore implements IndexStore
      */
     public function delete(IndexKey $indexKey): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(IndexKey $indexKey) use ($adapter): \Generator
+            function() use ($indexKey): \Generator
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
                     equalsCriteria('value_key', $indexKey->valueKey),
                 ];
 
-                yield remove($adapter, self::TABLE_NAME, $criteria);
-            },
-            $indexKey
+                yield remove($this->adapter, self::TABLE_NAME, $criteria);
+            }
         );
     }
 
@@ -128,10 +118,8 @@ final class SqlIndexStore implements IndexStore
      */
     public function update(IndexKey $indexKey, IndexValue $value): Promise
     {
-        $adapter = $this->adapter;
-
         return call(
-            static function(IndexKey $indexKey, IndexValue $value) use ($adapter): \Generator
+            function() use ($indexKey, $value): \Generator
             {
                 $updateQuery = updateQuery(self::TABLE_NAME, ['value_data' => $value->value])
                     ->where(equalsCriteria('index_tag', $indexKey->indexName))
@@ -144,12 +132,10 @@ final class SqlIndexStore implements IndexStore
                  *
                  * @var \ServiceBus\Storage\Common\ResultSet $resultSet
                  */
-                $resultSet = yield $adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
 
                 return $resultSet->affectedRows();
-            },
-            $indexKey,
-            $value
+            }
         );
     }
 }
