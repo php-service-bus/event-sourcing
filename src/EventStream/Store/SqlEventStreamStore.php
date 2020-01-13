@@ -14,6 +14,7 @@ namespace ServiceBus\EventSourcing\EventStream\Store;
 
 use function Amp\call;
 use function Latitude\QueryBuilder\field;
+use function ServiceBus\Common\now;
 use function ServiceBus\Storage\Sql\deleteQuery;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchAll;
@@ -521,7 +522,7 @@ final class SqlEventStreamStore implements EventStreamStore
                 $storedAggregateEvent->eventClass,
                 \base64_encode($storedAggregateEvent->eventData),
                 $storedAggregateEvent->occuredAt,
-                \date('Y-m-d H:i:s'),
+                now()->format('Y-m-d H:i:s.u'),
             ];
 
             $eventsRows[] = $row;

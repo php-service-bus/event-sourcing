@@ -70,7 +70,7 @@ function eventToStoredRepresentation(EventSerializer $serializer, AggregateEvent
         $aggregateEvent->playhead,
         $serializer->serialize($aggregateEvent->event),
         $eventClass,
-        (string) datetimeToString($aggregateEvent->occuredAt)
+        $aggregateEvent->occuredAt->format('Y-m-d H:i:s.u')
     );
 }
 

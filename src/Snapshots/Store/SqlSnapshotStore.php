@@ -13,7 +13,6 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Snapshots\Store;
 
 use function Amp\call;
-use function ServiceBus\Common\datetimeToString;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\find;
@@ -54,7 +53,7 @@ final class SqlSnapshotStore implements SnapshotStore
                     'aggregate_class'    => \get_class($snapshot->aggregate),
                     'version'            => $snapshot->aggregate->version(),
                     'payload'            => \base64_encode(\serialize($snapshot)),
-                    'created_at'         => datetimeToString($snapshot->aggregate->getCreatedAt()),
+                    'created_at'         => $snapshot->aggregate->getCreatedAt()->format('Y-m-d H:i:s.u'),
                 ]);
 
                 $compiledQuery = $insertQuery->compile();

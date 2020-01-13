@@ -12,7 +12,6 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing;
 
-use function ServiceBus\Common\datetimeInstantiator;
 use function ServiceBus\Common\now;
 use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
@@ -216,10 +215,7 @@ abstract class Aggregate
     {
         $this->increaseVersion(self::INCREASE_VERSION_STEP);
 
-        /** @var \DateTimeImmutable $currentDate */
-        $currentDate = datetimeInstantiator('NOW');
-
-        $this->events[] = AggregateEvent::create(uuid(), $event, $this->version, $currentDate);
+        $this->events[] = AggregateEvent::create(uuid(), $event, $this->version, now());
     }
 
     /**
