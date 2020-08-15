@@ -12,24 +12,24 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Tests;
 
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use ServiceBus\EventSourcing\EventSourcingProvider;
-use ServiceBus\EventSourcing\Exceptions\DuplicateAggregate;
-use ServiceBus\EventSourcing\Exceptions\RevertAggregateVersionFailed;
-use ServiceBus\EventSourcing\Tests\stubs\Context;
 use function Amp\Promise\wait;
 use function ServiceBus\Storage\Sql\fetchOne;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Aggregate;
+use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
 use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
+use ServiceBus\EventSourcing\Exceptions\DuplicateAggregate;
+use ServiceBus\EventSourcing\Exceptions\RevertAggregateVersionFailed;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 use ServiceBus\EventSourcing\Snapshots\Store\SnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
+use ServiceBus\EventSourcing\Tests\stubs\Context;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
 use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
@@ -100,7 +100,7 @@ final class EventSourcingProviderTest extends TestCase
             __DIR__ . '/../src/Snapshots/Store/schema/indexes.sql',
         ];
 
-        foreach($schemas as $schema)
+        foreach ($schemas as $schema)
         {
             $queries = \array_filter(
                 \explode(';', \file_get_contents($schema)),
@@ -108,11 +108,11 @@ final class EventSourcingProviderTest extends TestCase
                 {
                     $element = \trim($element);
 
-                    return $element !== '' ? $element : null;
+                    return '' !== $element ? $element : null;
                 }
             );
 
-            foreach($queries as $query)
+            foreach ($queries as $query)
             {
                 wait(self::$adapter->execute($query));
             }
@@ -226,7 +226,7 @@ final class EventSourcingProviderTest extends TestCase
 
         yield $this->eventSourcingProvider->save($aggregate, $context);
 
-        foreach(\range(1, 6) as $item)
+        foreach (\range(1, 6) as $item)
         {
             $aggregate->firstAction($item + 1 . ' event');
         }

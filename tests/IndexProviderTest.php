@@ -12,7 +12,6 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Tests;
 
-use ServiceBus\EventSourcing\IndexProvider;
 use function Amp\Promise\wait;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +19,7 @@ use ServiceBus\EventSourcing\Indexes\IndexKey;
 use ServiceBus\EventSourcing\Indexes\IndexValue;
 use ServiceBus\EventSourcing\Indexes\Store\IndexStore;
 use ServiceBus\EventSourcing\Indexes\Store\SqlIndexStore;
+use ServiceBus\EventSourcing\IndexProvider;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
@@ -67,7 +67,7 @@ final class IndexProviderTest extends TestCase
             __DIR__ . '/../src/Snapshots/Store/schema/indexes.sql',
         ];
 
-        foreach($schemas as $schema)
+        foreach ($schemas as $schema)
         {
             $queries = \array_filter(
                 \explode(';', \file_get_contents($schema)),
@@ -75,11 +75,11 @@ final class IndexProviderTest extends TestCase
                 {
                     $element = \trim($element);
 
-                    return $element !== '' ? $element : null;
+                    return '' !== $element ? $element : null;
                 }
             );
 
-            foreach($queries as $query)
+            foreach ($queries as $query)
             {
                 wait(self::$adapter->execute($query));
             }

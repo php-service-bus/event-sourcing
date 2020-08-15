@@ -13,13 +13,13 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Tests;
 
 use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\Common\isUuid;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
-use function ServiceBus\Common\isUuid;
 
 /**
  *
