@@ -28,6 +28,9 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return Promise<void>
+     *
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise;
 
@@ -37,18 +40,22 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<void>
+     *
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise;
 
     /**
      * Load event stream.
      *
-     * Returns \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\ResultSetIterationFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<\ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null>
+     *
      */
     public function load(
         AggregateId $id,
@@ -62,6 +69,9 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
+     *
+     * @return Promise<void>
+     *
      */
     public function close(AggregateId $id): Promise;
 

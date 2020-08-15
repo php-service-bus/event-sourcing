@@ -225,7 +225,7 @@ abstract class Aggregate
     {
         $eventListenerMethodName = self::createListenerName($event);
 
-        true === self::isInternalEvent($event)
+        self::isInternalEvent($event)
             ? $this->processInternalEvent($eventListenerMethodName, $event)
             : $this->processChildEvent($eventListenerMethodName, $event);
     }
@@ -235,7 +235,7 @@ abstract class Aggregate
      */
     private static function isInternalEvent(object $event): bool
     {
-        return true === \in_array(\get_class($event), self::INTERNAL_EVENTS, true);
+        return \in_array(\get_class($event), self::INTERNAL_EVENTS, true);
     }
 
     private function processInternalEvent(string $listenerName, object $event): void
@@ -254,7 +254,7 @@ abstract class Aggregate
          */
         $closure = function(object $event) use ($listenerName): void
         {
-            if (true === \method_exists($this, $listenerName))
+            if (\method_exists($this, $listenerName))
             {
                 $this->{$listenerName}($event);
             }

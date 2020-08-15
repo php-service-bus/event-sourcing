@@ -27,16 +27,20 @@ interface SnapshotStore
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
+     *
+     * @return Promise<void>
+     *
      */
     public function save(Snapshot $snapshot): Promise;
 
     /**
      * Load snapshot.
      *
-     * Returns \ServiceBus\EventSourcing\Snapshots\Snapshot|null
-     *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
+     *
      */
     public function load(AggregateId $id): Promise;
 
@@ -45,6 +49,9 @@ interface SnapshotStore
      *
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
+     *
+     * @return Promise<void>
+     *
      */
     public function remove(AggregateId $id): Promise;
 }

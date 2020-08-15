@@ -17,7 +17,7 @@ use ServiceBus\EventSourcing\AggregateId;
 /**
  * Event stream.
  *
- * @psalm-immutable
+ * @psalm-readonly
  */
 final class AggregateEventStream
 {

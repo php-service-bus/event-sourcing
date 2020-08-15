@@ -54,6 +54,7 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise
     {
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         return $this->adapter->transactional(
             static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
@@ -68,6 +69,7 @@ final class SqlEventStreamStore implements EventStreamStore
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise
     {
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         return $this->adapter->transactional(
             static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
@@ -151,10 +153,11 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 try
                 {
+                    /** @psalm-suppress MixedArgumentTypeCoercion */
                     yield $this->adapter->transactional(
                         static function(QueryExecutor $queryExecutor) use ($force, $streamId, $toVersion): \Generator
                         {
-                            true === $force
+                            $force
                                 ? yield from self::doDeleteTailEvents($queryExecutor, $streamId, $toVersion)
                                 : yield from self::doSkipEvents($queryExecutor, $streamId, $toVersion);
 
@@ -422,7 +425,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $events = [];
 
-        if (true === \is_array($eventsData) && 0 !== \count($eventsData))
+        if (\is_array($eventsData) && 0 !== \count($eventsData))
         {
             /**
              * @psalm-var array{
@@ -437,25 +440,15 @@ final class SqlEventStreamStore implements EventStreamStore
             foreach ($eventsData as $eventRow)
             {
                 $playhead = (int) $eventRow['playhead'];
+                $payload = (string) \base64_decode($decoder->unescapeBinary($eventRow['payload']));
 
-                $payload = \base64_decode($decoder->unescapeBinary($eventRow['payload']));
-
-                if (true === \is_string($payload))
-                {
-                    $events[$playhead] = StoredAggregateEvent::restore(
-                        $eventRow['id'],
-                        $playhead,
-                        $payload,
-                        $eventRow['event_class'],
-                        $eventRow['occured_at'],
-                        $eventRow['recorded_at']
-                    );
-
-                    continue;
-                }
-
-                throw new \LogicException(
-                    \sprintf('Unable to decode event content with ID: %s', $eventRow['id'])
+                $events[$playhead] = StoredAggregateEvent::restore(
+                    $eventRow['id'],
+                    $playhead,
+                    $payload,
+                    $eventRow['event_class'],
+                    $eventRow['occured_at'],
+                    $eventRow['recorded_at']
                 );
             }
         }

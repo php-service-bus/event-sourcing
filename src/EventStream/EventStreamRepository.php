@@ -15,6 +15,7 @@ namespace ServiceBus\EventSourcing\EventStream;
 use function Amp\call;
 use function ServiceBus\Common\createWithoutConstructor;
 use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\Common\throwableMessage;
 use function ServiceBus\EventSourcing\EventStream\Store\streamToDomainRepresentation;
 use function ServiceBus\EventSourcing\EventStream\Store\streamToStoredRepresentation;
 use Amp\Promise;
@@ -120,7 +121,7 @@ final class EventStreamRepository
                     $this->logger->debug('Load aggregate with id "{aggregateIdClass}:{aggregateId}" failed', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
-                        'throwableMessage' => $throwable->getMessage(),
+                        'throwableMessage' => throwableMessage($throwable),
                         'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
                     ]);
 
@@ -178,7 +179,7 @@ final class EventStreamRepository
                     $this->logger->debug('Save new aggregate with identifier "{aggregateIdClass}:{aggregateId}" failed', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
-                        'throwableMessage' => $throwable->getMessage(),
+                        'throwableMessage' => throwableMessage($throwable),
                         'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
                     ]);
 
@@ -230,7 +231,7 @@ final class EventStreamRepository
                     $this->logger->debug('Adding events to an existing stream with identifier "{aggregateIdClass}:{aggregateId}', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
-                        'throwableMessage' => $throwable->getMessage(),
+                        'throwableMessage' => throwableMessage($throwable),
                         'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
                     ]);
 
@@ -291,7 +292,7 @@ final class EventStreamRepository
                     $this->logger->debug('Error when rolling back the version of the aggregate with the identifier "{aggregateIdClass}:{aggregateId}', [
                         'aggregateIdClass' => $idClass,
                         'aggregateId'      => $idValue,
-                        'throwableMessage' => $throwable->getMessage(),
+                        'throwableMessage' => throwableMessage($throwable),
                         'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
                     ]);
 
@@ -323,7 +324,7 @@ final class EventStreamRepository
         $storedEventStream = streamToStoredRepresentation($this->serializer, $eventStream);
 
         /** @noinspection PhpUnnecessaryLocalVariableInspection */
-        $promise = true === $isNew
+        $promise = $isNew
             ? $this->store->save($storedEventStream)
             : $this->store->append($storedEventStream);
 
@@ -332,7 +333,7 @@ final class EventStreamRepository
         /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
         $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
 
-        if (true === $this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
+        if ($this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
         {
             yield $this->snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
         }

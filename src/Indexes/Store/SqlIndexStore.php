@@ -58,9 +58,9 @@ final class SqlIndexStore implements IndexStore
                 /** @var array<string, mixed>|null $result */
                 $result = yield fetchOne($resultSet);
 
-                if (true === \is_array($result))
+                if (\is_array($result))
                 {
-                    return new  IndexValue($result['value_data']);
+                    return new IndexValue($result['value_data']);
                 }
             }
         );
