@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing;
 
@@ -30,7 +30,9 @@ use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
  */
 final class EventSourcingProvider
 {
-    /** @var EventStreamRepository */
+    /**
+     * @var EventStreamRepository
+     */
     private $repository;
 
     /**
@@ -42,10 +44,14 @@ final class EventSourcingProvider
      */
     private $aggregates = [];
 
-    /** @var MutexFactory */
+    /**
+     * @var MutexFactory
+     */
     private $mutexFactory;
 
-    /** @var Lock[] */
+    /**
+     * @var Lock[]
+     */
     private $lockCollection = [];
 
     public function __construct(EventStreamRepository $repository, ?MutexFactory $mutexFactory = null)
@@ -57,14 +63,14 @@ final class EventSourcingProvider
     /**
      * Load aggregate.
      *
-     * Returns \ServiceBus\EventSourcing\Aggregate|null
+     * @return Promise<\ServiceBus\EventSourcing\Aggregate|null>
      *
      * @throws \ServiceBus\EventSourcing\Exceptions\LoadAggregateFailed
      */
     public function load(AggregateId $id): Promise
     {
         return call(
-            function() use ($id): \Generator
+            function () use ($id): \Generator
             {
                 yield from $this->setupMutex($id);
 
@@ -101,42 +107,30 @@ final class EventSourcingProvider
     public function save(Aggregate $aggregate, ServiceBusContext $context): Promise
     {
         return call(
-            function() use ($aggregate, $context): \Generator
+            function () use ($aggregate, $context): \Generator
             {
                 try
                 {
                     /** The aggregate hasn't been loaded before, which means it is new */
-                    if (false === isset($this->aggregates[$aggregate->id()->toString()]))
+                    if (isset($this->aggregates[$aggregate->id()->toString()]) === false)
                     {
-                        /**
-                         * @psalm-var  array<int, object> $events
-                         *
-                         * @var object[] $events
-                         */
                         $events = yield $this->repository->save($aggregate);
 
                         $this->aggregates[$aggregate->id()->toString()] = \get_class($aggregate);
                     }
                     else
                     {
-                        /**
-                         * @psalm-var array<int, object> $events
-                         *
-                         * @var object[] $events
-                         */
                         $events = yield $this->repository->update($aggregate);
                     }
 
-                    $promises = [];
+                    /** @var object[] $events */
 
-                    foreach ($events as $event)
+                    if (\count($events) !== 0)
                     {
-                        $promises[] = $context->delivery($event);
+                        yield $context->deliveryBulk($events);
                     }
-
-                    yield $promises;
                 }
-                catch (UniqueConstraintViolationCheckFailed $exception)
+                catch (UniqueConstraintViolationCheckFailed)
                 {
                     throw DuplicateAggregate::create($aggregate->id());
                 }
@@ -155,7 +149,7 @@ final class EventSourcingProvider
     /**
      * Revert aggregate to specified version.
      *
-     * Returns \ServiceBus\EventSourcing\Aggregate
+     * @return Promise<\ServiceBus\EventSourcing\Aggregate>
      *
      * Mode options:
      *   - 1 (EventStreamRepository::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may
@@ -171,9 +165,8 @@ final class EventSourcingProvider
     ): Promise {
         $mode = $mode ?? EventStreamRepository::REVERT_MODE_SOFT_DELETE;
 
-        /** @psalm-suppress InvalidArgument Incorrect psalm unpack parameters (...$args) */
         return call(
-            function() use ($aggregate, $toVersion, $mode): \Generator
+            function () use ($aggregate, $toVersion, $mode): \Generator
             {
                 yield from $this->setupMutex($aggregate->id());
 
@@ -200,7 +193,7 @@ final class EventSourcingProvider
     {
         $mutexKey = createAggregateMutexKey($id);
 
-        if (false === \array_key_exists($mutexKey, $this->lockCollection))
+        if (\array_key_exists($mutexKey, $this->lockCollection) === false)
         {
             $mutex = $this->mutexFactory->create($mutexKey);
 

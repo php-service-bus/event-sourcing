@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Snapshots;
 
@@ -26,7 +26,9 @@ use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
  */
 final class Snapshotter
 {
-    /** @var SnapshotStore  */
+    /**
+     * @var SnapshotStore
+     */
     private $store;
 
     /**
@@ -36,7 +38,9 @@ final class Snapshotter
      */
     private $trigger;
 
-    /** @var LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     public function __construct(
@@ -52,12 +56,12 @@ final class Snapshotter
     /**
      * Load snapshot for aggregate.
      *
-     * Returns \ServiceBus\EventSourcing\Snapshots\Snapshot|null
+     * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
      */
     public function load(AggregateId $id): Promise
     {
         return call(
-            function() use ($id): \Generator
+            function () use ($id): \Generator
             {
                 $snapshot = null;
 
@@ -86,11 +90,13 @@ final class Snapshotter
 
     /**
      * Store new snapshot.
+     *
+     * @return Promise<void>
      */
     public function store(Snapshot $snapshot): Promise
     {
         return call(
-            function() use ($snapshot): \Generator
+            function () use ($snapshot): \Generator
             {
                 $id = $snapshot->aggregate->id();
 
@@ -110,10 +116,6 @@ final class Snapshotter
                             'throwablePoint'   => \sprintf('%s:%d', $throwable->getFile(), $throwable->getLine()),
                         ]
                     );
-                }
-                finally
-                {
-                    unset($id);
                 }
             }
         );

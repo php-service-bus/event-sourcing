@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -23,14 +23,13 @@ final class AggregateIdTest extends TestCase
 {
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function createWithEmptyId(): void
     {
         $this->expectException(InvalidAggregateIdentifier::class);
         $this->expectExceptionMessage('The aggregate identifier can\'t be empty');
 
+        /** @noinspection PhpExpressionResultUnusedInspection */
         new TestAggregateId('');
     }
 }

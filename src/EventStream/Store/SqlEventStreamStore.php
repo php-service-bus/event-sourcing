@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
@@ -41,7 +41,9 @@ final class SqlEventStreamStore implements EventStreamStore
 
     private const STREAM_EVENTS_TABLE = 'event_store_stream_events';
 
-    /** @var DatabaseAdapter */
+    /**
+     * @var DatabaseAdapter
+     */
     private $adapter;
 
     public function __construct(DatabaseAdapter $adapter)
@@ -49,14 +51,10 @@ final class SqlEventStreamStore implements EventStreamStore
         $this->adapter = $adapter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise
     {
-        /** @psalm-suppress MixedArgumentTypeCoercion */
         return $this->adapter->transactional(
-            static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
+            static function (QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
                 yield from self::doSaveStream($queryExecutor, $aggregateEventStream);
                 yield from self::doSaveEvents($queryExecutor, $aggregateEventStream);
@@ -64,47 +62,55 @@ final class SqlEventStreamStore implements EventStreamStore
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise
     {
-        /** @psalm-suppress MixedArgumentTypeCoercion */
         return $this->adapter->transactional(
-            static function(QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
+            static function (QueryExecutor $queryExecutor) use ($aggregateEventStream): \Generator
             {
                 yield from self::doSaveEvents($queryExecutor, $aggregateEventStream);
             }
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function load(
         AggregateId $id,
         int $fromVersion = Aggregate::START_PLAYHEAD_INDEX,
         ?int $toVersion = null
     ): Promise {
         return call(
-            function() use ($id, $fromVersion, $toVersion): \Generator
+            function () use ($id, $fromVersion, $toVersion): \Generator
             {
                 $aggregateEventStream = null;
 
-                /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($this->adapter, $id);
+                /**
+                 * @psalm-var  array{
+                 *     id:string,
+                 *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
+                 *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
+                 *     created_at:string,
+                 *     closed_at:string|null
+                 * }|null $streamData
+                 */
+                $streamData = yield from self::doLoadStream(
+                    queryExecutor: $this->adapter,
+                    id: $id
+                );
 
-                if (null !== $streamData)
+                if ($streamData !== null)
                 {
                     /** @var array<int, array>|null $streamEventsData */
                     $streamEventsData = yield from self::doLoadStreamEvents(
-                        $this->adapter,
-                        (string) $streamData['id'],
-                        $fromVersion,
-                        $toVersion
+                        queryExecutor: $this->adapter,
+                        streamId: $streamData['id'],
+                        fromVersion: $fromVersion,
+                        toVersion: $toVersion
                     );
 
-                    $aggregateEventStream = self::restoreEventStream($this->adapter, $streamData, $streamEventsData);
+                    $aggregateEventStream = self::restoreEventStream(
+                        queryExecutor: $this->adapter,
+                        streamData: $streamData,
+                        streamEventsData: $streamEventsData
+                    );
                 }
 
                 return $aggregateEventStream;
@@ -112,13 +118,10 @@ final class SqlEventStreamStore implements EventStreamStore
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function close(AggregateId $id): Promise
     {
         return call(
-            function() use ($id): \Generator
+            function () use ($id): \Generator
             {
                 $updateQuery = updateQuery(self::STREAMS_TABLE, ['closed_at' => \date('Y-m-d H:i:s')])
                     ->where(equalsCriteria('id', $id->toString()))
@@ -126,24 +129,27 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 $compiledQuery = $updateQuery->compile();
 
-                /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
-                yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                yield $this->adapter->execute(
+                    queryString: $compiledQuery->sql(),
+                    parameters: $compiledQuery->params()
+                );
             }
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function revert(AggregateId $id, int $toVersion, bool $force): Promise
     {
         return call(
-            function() use ($id, $toVersion, $force): \Generator
+            function () use ($id, $toVersion, $force): \Generator
             {
                 /** @var array<string, string>|null $streamData */
-                $streamData = yield from self::doLoadStream($this->adapter, $id);
+                $streamData = yield from self::doLoadStream(
+                    queryExecutor: $this->adapter,
+                    id: $id
+                );
 
-                if (null === $streamData)
+                if ($streamData === null)
                 {
                     throw EventStreamDoesNotExist::create($id);
                 }
@@ -153,16 +159,29 @@ final class SqlEventStreamStore implements EventStreamStore
 
                 try
                 {
-                    /** @psalm-suppress MixedArgumentTypeCoercion */
                     yield $this->adapter->transactional(
-                        static function(QueryExecutor $queryExecutor) use ($force, $streamId, $toVersion): \Generator
+                        static function (QueryExecutor $queryExecutor) use ($force, $streamId, $toVersion): \Generator
                         {
                             $force
-                                ? yield from self::doDeleteTailEvents($queryExecutor, $streamId, $toVersion)
-                                : yield from self::doSkipEvents($queryExecutor, $streamId, $toVersion);
+                                ?
+                                yield from self::doDeleteTailEvents(
+                                    queryExecutor: $queryExecutor,
+                                    streamId: $streamId,
+                                    toVersion: $toVersion
+                                )
+                                :
+                                yield from self::doSkipEvents(
+                                    queryExecutor: $queryExecutor,
+                                    streamId: $streamId,
+                                    toVersion: $toVersion
+                                );
 
                             /** restore soft deleted events */
-                            yield from self::doRestoreEvents($queryExecutor, $streamId, $toVersion);
+                            yield from self::doRestoreEvents(
+                                queryExecutor: $queryExecutor,
+                                streamId: $streamId,
+                                toVersion: $toVersion
+                            );
                         }
                     );
                 }
@@ -197,14 +216,11 @@ final class SqlEventStreamStore implements EventStreamStore
 
         $compiledQuery = $insertQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
-
-        unset($insertQuery, $compiledQuery, $resultSet);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
     }
 
     /**
@@ -219,12 +235,12 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsCount = \count($eventsStream->storedAggregateEvents);
 
-        if (0 !== $eventsCount)
+        if ($eventsCount !== 0)
         {
-            /** @psalm-suppress MixedTypeCoercion Invalid params() docblock */
+            /** @psalm-suppress MixedArgumentTypeCoercion */
             yield $queryExecutor->execute(
-                self::createSaveEventQueryString($eventsCount),
-                self::collectSaveEventQueryParameters($eventsStream)
+                queryString: self::createSaveEventQueryString($eventsCount),
+                parameters: self::collectSaveEventQueryParameters($eventsStream)
             );
         }
     }
@@ -241,24 +257,15 @@ final class SqlEventStreamStore implements EventStreamStore
             ->where(equalsCriteria('id', $id->toString()))
             ->andWhere(equalsCriteria('identifier_class', \get_class($id)));
 
-        /** @var \Latitude\QueryBuilder\Query $compiledQuery */
         $compiledQuery = $selectQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $resultSet = yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
 
-        /**
-         * @psalm-var      array<string, string>|null $data
-         *
-         * @var array $data
-         */
-        $data = yield fetchOne($resultSet);
-
-        return $data;
+        return yield fetchOne($resultSet);
     }
 
     /**
@@ -274,35 +281,25 @@ final class SqlEventStreamStore implements EventStreamStore
         int $fromVersion,
         ?int $toVersion
     ): \Generator {
-        /** @var \Latitude\QueryBuilder\Query\SelectQuery $selectQuery */
         $selectQuery = selectQuery(self::STREAM_EVENTS_TABLE)
             ->where(field('stream_id')->eq($streamId))
             ->andWhere(field('playhead')->gte($fromVersion))
             ->andWhere(field('canceled_at')->isNull());
 
-        if (null !== $toVersion && $fromVersion < $toVersion)
+        if ($toVersion !== null && $fromVersion < $toVersion)
         {
             $selectQuery->andWhere(field('playhead')->lte($toVersion));
         }
 
-        /** @var \Latitude\QueryBuilder\Query $compiledQuery */
         $compiledQuery = $selectQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $queryExecutor->execute($compiledQuery->sql(), $compiledQuery->params());
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $resultSet = yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
 
-        /**
-         * @psalm-var      array<int, array>|null $result
-         *
-         * @var array $result
-         */
-        $result = yield fetchAll($resultSet);
-
-        return $result;
+        return yield fetchAll($resultSet);
     }
 
     /**
@@ -312,22 +309,22 @@ final class SqlEventStreamStore implements EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      */
-    private static function doDeleteTailEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
-    {
+    private static function doDeleteTailEvents(
+        QueryExecutor $queryExecutor,
+        string $streamId,
+        int $toVersion
+    ): \Generator {
         $deleteQuery = deleteQuery(self::STREAM_EVENTS_TABLE)
             ->where(equalsCriteria('stream_id', $streamId))
             ->andWhere(field('playhead')->gt($toVersion));
 
         $compiledQuery = $deleteQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $executor->execute($compiledQuery->sql(), $compiledQuery->params());
-
-        unset($deleteQuery, $compiledQuery, $resultSet);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
     }
 
     /**
@@ -337,23 +334,19 @@ final class SqlEventStreamStore implements EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      */
-    private static function doSkipEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
+    private static function doSkipEvents(QueryExecutor $queryExecutor, string $streamId, int $toVersion): \Generator
     {
         $updateQuery = updateQuery(self::STREAM_EVENTS_TABLE, ['canceled_at' => \date('Y-m-d H:i:s')])
             ->where(equalsCriteria('stream_id', $streamId))
             ->andWhere(field('playhead')->gt($toVersion));
 
-        /** @var \Latitude\QueryBuilder\Query $compiledQuery */
         $compiledQuery = $updateQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $executor->execute($compiledQuery->sql(), $compiledQuery->params());
-
-        unset($updateQuery, $compiledQuery, $resultSet);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
     }
 
     /**
@@ -362,7 +355,7 @@ final class SqlEventStreamStore implements EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      */
-    private static function doRestoreEvents(QueryExecutor $executor, string $streamId, int $toVersion): \Generator
+    private static function doRestoreEvents(QueryExecutor $queryExecutor, string $streamId, int $toVersion): \Generator
     {
         $updateQuery = updateQuery(self::STREAM_EVENTS_TABLE, ['canceled_at' => null])
             ->where(equalsCriteria('stream_id', $streamId))
@@ -370,45 +363,41 @@ final class SqlEventStreamStore implements EventStreamStore
 
         $compiledQuery = $updateQuery->compile();
 
-        /**
-         * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-         *
-         * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-         */
-        $resultSet = yield $executor->execute($compiledQuery->sql(), $compiledQuery->params());
-
-        unset($updateQuery, $compiledQuery, $resultSet);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        yield $queryExecutor->execute(
+            queryString: $compiledQuery->sql(),
+            parameters: $compiledQuery->params()
+        );
     }
 
     /**
      * Transform events stream array data to stored representation.
      *
-     * @psalm-param array<string, string>  $streamData
+     * @psalm-param  array{
+     *     id:string,
+     *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
+     *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
+     *     created_at:string,
+     *     closed_at:string|null
+     * } $streamData
      * @psalm-param array<int, array>|null $streamEventsData
      *
      * @throws \LogicException
      */
     private static function restoreEventStream(
-        DatabaseAdapter $adapter,
+        QueryExecutor $queryExecutor,
         array $streamData,
         ?array $streamEventsData
     ): StoredAggregateEventStream {
-        /** @psalm-var array{
-         *     id:string,
-         *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
-         *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
-         *     created_at:string,
-         *     closed_at:string|null
-         * } $streamData
-         */
+        /** @var DatabaseAdapter $queryExecutor */
 
         return new StoredAggregateEventStream(
-            $streamData['id'],
-            $streamData['identifier_class'],
-            $streamData['aggregate_class'],
-            self::restoreEvents($adapter, $streamEventsData),
-            $streamData['created_at'],
-            $streamData['closed_at']
+            aggregateId: $streamData['id'],
+            aggregateIdClass: $streamData['identifier_class'],
+            aggregateClass: $streamData['aggregate_class'],
+            storedAggregateEvents: self::restoreEvents($queryExecutor, $streamEventsData),
+            createdAt: $streamData['created_at'],
+            closedAt: $streamData['closed_at']
         );
     }
 
@@ -425,7 +414,7 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $events = [];
 
-        if (\is_array($eventsData) && 0 !== \count($eventsData))
+        if (\is_array($eventsData) && \count($eventsData) !== 0)
         {
             /**
              * @psalm-var array{
@@ -440,15 +429,15 @@ final class SqlEventStreamStore implements EventStreamStore
             foreach ($eventsData as $eventRow)
             {
                 $playhead = (int) $eventRow['playhead'];
-                $payload = (string) \base64_decode($decoder->unescapeBinary($eventRow['payload']));
+                $payload  = (string) \base64_decode($decoder->unescapeBinary($eventRow['payload']));
 
                 $events[$playhead] = StoredAggregateEvent::restore(
-                    $eventRow['id'],
-                    $playhead,
-                    $payload,
-                    $eventRow['event_class'],
-                    $eventRow['occured_at'],
-                    $eventRow['recorded_at']
+                    eventId: $eventRow['id'],
+                    playheadPosition: $playhead,
+                    eventData: $payload,
+                    eventClass: $eventRow['event_class'],
+                    occurredAt: $eventRow['occured_at'],
+                    recordedAt: $eventRow['recorded_at']
                 );
             }
         }
@@ -505,9 +494,9 @@ final class SqlEventStreamStore implements EventStreamStore
     {
         $eventsRows = [];
 
+        /** @var StoredAggregateEvent $storedAggregateEvent */
         foreach ($eventsStream->storedAggregateEvents as $storedAggregateEvent)
         {
-            /** @var StoredAggregateEvent $storedAggregateEvent */
             $row = [
                 $storedAggregateEvent->eventId,
                 $eventsStream->aggregateId,

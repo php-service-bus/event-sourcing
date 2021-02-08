@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing;
 
@@ -17,6 +17,8 @@ use ServiceBus\EventSourcing\Exceptions\InvalidAggregateIdentifier;
 
 /**
  * Base aggregate identifier class.
+ *
+ * @psalm-immutable
  */
 abstract class AggregateId
 {
@@ -40,7 +42,7 @@ abstract class AggregateId
      */
     final public function __construct(string $id)
     {
-        if ('' === $id)
+        if ($id === '')
         {
             throw InvalidAggregateIdentifier::emptyId();
         }

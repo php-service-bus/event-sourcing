@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
@@ -22,12 +22,16 @@ final class AggregateEvent
     /**
      * Event id.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $id;
 
     /**
      * Playhead position.
+     *
+     * @psalm-readonly
      *
      * @var int
      */
@@ -36,6 +40,8 @@ final class AggregateEvent
     /**
      * Received event.
      *
+     * @psalm-readonly
+     *
      * @var object
      */
     public $event;
@@ -43,20 +49,30 @@ final class AggregateEvent
     /**
      * Occurred datetime.
      *
+     * @psalm-readonly
+     *
      * @var \DateTimeImmutable
      */
-    public $occuredAt;
+    public $occurredAt;
 
     /**
      * Recorded datetime.
      *
+     * @psalm-readonly
+     *
      * @var \DateTimeImmutable|null
      */
-    public $recordedAt = null;
+    public $recordedAt;
 
-    public static function create(string $id, object $event, int $playhead, \DateTimeImmutable $occuredAt): self
+    public static function create(string $id, object $event, int $playhead, \DateTimeImmutable $occurredAt): self
     {
-        return new self($id, $event, $playhead, $occuredAt, null);
+        return new self(
+            id: $id,
+            event: $event,
+            playhead: $playhead,
+            occurredAt: $occurredAt,
+            recordedAt: null
+        );
     }
 
     public static function restore(
@@ -66,20 +82,26 @@ final class AggregateEvent
         \DateTimeImmutable $occuredAt,
         \DateTimeImmutable $recordedAt
     ): self {
-        return new self($id, $event, $playhead, $occuredAt, $recordedAt);
+        return new self(
+            id: $id,
+            event: $event,
+            playhead: $playhead,
+            occurredAt: $occuredAt,
+            recordedAt: $recordedAt
+        );
     }
 
     private function __construct(
         string $id,
         object $event,
         int $playhead,
-        \DateTimeImmutable $occuredAt,
+        \DateTimeImmutable $occurredAt,
         ?\DateTimeImmutable $recordedAt = null
     ) {
         $this->id         = $id;
         $this->event      = $event;
         $this->playhead   = $playhead;
-        $this->occuredAt  = $occuredAt;
+        $this->occurredAt = $occurredAt;
         $this->recordedAt = $recordedAt;
     }
 }

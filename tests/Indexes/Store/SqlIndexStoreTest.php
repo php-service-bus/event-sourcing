@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -28,17 +28,16 @@ use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
  */
 final class SqlIndexStoreTest extends TestCase
 {
-    /** @var DatabaseAdapter|null */
-    private static $adapter = null;
-
-    /** @var SqlIndexStore */
-    private $indexStore;
+    /**
+     * @var DatabaseAdapter|null
+     */
+    private static $adapter;
 
     /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
+     * @var SqlIndexStore
      */
+    private $indexStore;
+
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
@@ -54,11 +53,6 @@ final class SqlIndexStoreTest extends TestCase
         );
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
@@ -66,11 +60,6 @@ final class SqlIndexStoreTest extends TestCase
         wait(self::$adapter->execute('DROP TABLE IF EXISTS event_sourcing_indexes CASCADE'));
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -78,11 +67,6 @@ final class SqlIndexStoreTest extends TestCase
         $this->indexStore = new SqlIndexStore(self::$adapter);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -92,13 +76,11 @@ final class SqlIndexStoreTest extends TestCase
 
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function save(): void
     {
         Loop::run(
-            function(): \Generator
+            function (): \Generator
             {
                 $index = new IndexKey(__CLASS__, 'testKey');
                 $value = new IndexValue(__METHOD__);
@@ -106,26 +88,24 @@ final class SqlIndexStoreTest extends TestCase
                 /** @var int $count */
                 $count = yield $this->indexStore->add($index, $value);
 
-                static::assertSame(1, $count);
+                self::assertSame(1, $count);
 
                 /** @var IndexValue|null $storedValue */
                 $storedValue = yield $this->indexStore->find($index);
 
-                static::assertNotNull($storedValue);
-                static::assertSame($value->value, $storedValue->value);
+                self::assertNotNull($storedValue);
+                self::assertSame($value->value, $storedValue->value);
             }
         );
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function saveDuplicate(): void
     {
         Loop::run(
-            function(): \Generator
+            function (): \Generator
             {
                 $this->expectException(UniqueConstraintViolationCheckFailed::class);
 
@@ -140,15 +120,11 @@ final class SqlIndexStoreTest extends TestCase
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function update(): void
     {
         Loop::run(
-            function(): \Generator
+            function (): \Generator
             {
                 $index = new IndexKey(__CLASS__, 'testKey');
                 $value = new IndexValue(__METHOD__);
@@ -162,8 +138,8 @@ final class SqlIndexStoreTest extends TestCase
                 /** @var IndexValue|null $storedValue */
                 $storedValue = yield $this->indexStore->find($index);
 
-                static::assertNotNull($storedValue);
-                static::assertSame($newValue->value, $storedValue->value);
+                self::assertNotNull($storedValue);
+                self::assertSame($newValue->value, $storedValue->value);
             }
         );
     }
@@ -176,7 +152,7 @@ final class SqlIndexStoreTest extends TestCase
     public function remove(): void
     {
         Loop::run(
-            function(): \Generator
+            function (): \Generator
             {
                 $index = new IndexKey(__CLASS__, 'testKey');
                 $value = new IndexValue(__METHOD__);
@@ -184,7 +160,7 @@ final class SqlIndexStoreTest extends TestCase
                 yield $this->indexStore->add($index, $value);
                 yield $this->indexStore->delete($index);
 
-                static::assertNull(wait($this->indexStore->find($index)));
+                self::assertNull(wait($this->indexStore->find($index)));
             }
         );
     }

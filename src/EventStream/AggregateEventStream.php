@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
@@ -17,12 +17,14 @@ use ServiceBus\EventSourcing\AggregateId;
 /**
  * Event stream.
  *
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class AggregateEventStream
 {
     /**
      * Stream (aggregate) identifier.
+     *
+     * @psalm-readonly
      *
      * @var AggregateId
      */
@@ -31,6 +33,7 @@ final class AggregateEventStream
     /**
      * Aggregate class.
      *
+     * @psalm-readonly
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
      *
      * @var string
@@ -40,6 +43,7 @@ final class AggregateEventStream
     /**
      * Event collection.
      *
+     * @psalm-readonly
      * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
@@ -49,6 +53,7 @@ final class AggregateEventStream
     /**
      * Origin event collection.
      *
+     * @psalm-readonly
      * @psalm-var array<int, object>
      *
      * @var object[]
@@ -58,6 +63,8 @@ final class AggregateEventStream
     /**
      * Created at datetime.
      *
+     * @psalm-readonly
+     *
      * @var \DateTimeImmutable
      */
     public $createdAt;
@@ -65,9 +72,11 @@ final class AggregateEventStream
     /**
      * Closed at datetime.
      *
+     * @psalm-readonly
+     *
      * @var \DateTimeImmutable|null
      */
-    public $closedAt = null;
+    public $closedAt;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
@@ -121,7 +130,7 @@ final class AggregateEventStream
     private static function extractOriginEvents(array $events): array
     {
         return \array_map(
-            static function(AggregateEvent $event): object
+            static function (AggregateEvent $event): object
             {
                 return $event->event;
             },

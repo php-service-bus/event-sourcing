@@ -3,26 +3,34 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Snapshots;
 
 use ServiceBus\EventSourcing\Aggregate;
 
 /**
- * @psalm-readonly
+ * @psalm-immutable
  */
 final class Snapshot
 {
-    /** @var Aggregate  */
+    /**
+     * @psalm-readonly
+     *
+     * @var Aggregate
+     */
     public $aggregate;
 
-    /** @var int  */
+    /**
+     * @psalm-readonly
+     *
+     * @var int
+     */
     public $version;
 
     public function __construct(Aggregate $aggregate, int $version)

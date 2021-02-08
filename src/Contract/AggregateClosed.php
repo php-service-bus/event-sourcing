@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Contract;
 
@@ -24,6 +24,8 @@ final class AggregateClosed
     /**
      * Aggregate identifier.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $id;
@@ -31,6 +33,7 @@ final class AggregateClosed
     /**
      * Aggregate identifier class.
      *
+     * @psalm-readonly
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
      *
      * @var string
@@ -40,6 +43,7 @@ final class AggregateClosed
     /**
      * Aggregate class.
      *
+     * @psalm-readonly
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
      *
      * @var string
@@ -48,6 +52,8 @@ final class AggregateClosed
 
     /**
      * Operation datetime.
+     *
+     * @psalm-readonly
      *
      * @var \DateTimeImmutable
      */
@@ -58,11 +64,8 @@ final class AggregateClosed
      */
     public function __construct(AggregateId $id, string $aggregateClass, \DateTimeImmutable $datetime)
     {
-        /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $idClass */
-        $idClass = (string) \get_class($id);
-
         $this->id             = $id->toString();
-        $this->idClass        = $idClass;
+        $this->idClass        = \get_class($id);
         $this->aggregateClass = $aggregateClass;
         $this->datetime       = $datetime;
     }

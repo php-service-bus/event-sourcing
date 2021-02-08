@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
@@ -22,12 +22,16 @@ final class StoredAggregateEvent
     /**
      * Event ID.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $eventId;
 
     /**
      * Playhead position.
+     *
+     * @psalm-readonly
      *
      * @var int
      */
@@ -36,6 +40,8 @@ final class StoredAggregateEvent
     /**
      * Serialized event data.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $eventData;
@@ -43,6 +49,7 @@ final class StoredAggregateEvent
     /**
      * Event class.
      *
+     * @psalm-readonly
      * @psalm-var class-string
      *
      * @var string
@@ -52,6 +59,8 @@ final class StoredAggregateEvent
     /**
      * Occured at datetime.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $occuredAt;
@@ -59,9 +68,11 @@ final class StoredAggregateEvent
     /**
      * Recorded at datetime.
      *
+     * @psalm-readonly
+     *
      * @var string|null
      */
-    public $recordedAt = null;
+    public $recordedAt;
 
     /**
      * @psalm-param class-string $eventClass
@@ -73,7 +84,13 @@ final class StoredAggregateEvent
         string $eventClass,
         string $occuredAt
     ): self {
-        return new self($eventId, $playheadPosition, $eventData, $eventClass, $occuredAt);
+        return new self(
+            eventId: $eventId,
+            playheadPosition: $playheadPosition,
+            eventData: $eventData,
+            eventClass: $eventClass,
+            occurredAt: $occuredAt
+        );
     }
 
     /**
@@ -84,10 +101,17 @@ final class StoredAggregateEvent
         int $playheadPosition,
         string $eventData,
         string $eventClass,
-        string $occuredAt,
+        string $occurredAt,
         string $recordedAt
     ): self {
-        return new self($eventId, $playheadPosition, $eventData, $eventClass, $occuredAt, $recordedAt);
+        return new self(
+            eventId: $eventId,
+            playheadPosition: $playheadPosition,
+            eventData: $eventData,
+            eventClass: $eventClass,
+            occurredAt: $occurredAt,
+            recordedAt: $recordedAt
+        );
     }
 
     /**
@@ -98,14 +122,14 @@ final class StoredAggregateEvent
         int $playheadPosition,
         string $eventData,
         string $eventClass,
-        string $occuredAt,
+        string $occurredAt,
         ?string $recordedAt = null
     ) {
         $this->eventId          = $eventId;
         $this->playheadPosition = $playheadPosition;
         $this->eventData        = $eventData;
         $this->eventClass       = $eventClass;
-        $this->occuredAt        = $occuredAt;
+        $this->occuredAt        = $occurredAt;
         $this->recordedAt       = $recordedAt;
     }
 }

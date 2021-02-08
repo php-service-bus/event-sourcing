@@ -3,16 +3,15 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Indexes;
 
-use ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed;
 use ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType;
 
 /**
@@ -23,45 +22,33 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType;
 final class IndexValue
 {
     /**
-     * @var mixed
+     * @var int|float|string|bool
      */
     public $value;
 
     /**
-     * @param mixed $value
+     * @param int|float|string $value
      *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
-     * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
      */
-    public function __construct($value)
+    public function __construct(int|float|string|bool $value)
     {
+        /** @psalm-suppress RedundantCondition */
         self::assertIsScalar($value);
-        self::assertNotEmpty($value);
 
         $this->value = $value;
     }
 
     /**
-     * @param mixed $value
-     *
-     * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\EmptyValuesNotAllowed
-     */
-    private static function assertNotEmpty($value): void
-    {
-        if ('' === (string) $value)
-        {
-            throw new EmptyValuesNotAllowed('Value can not be empty');
-        }
-    }
-
-    /**
-     * @param mixed $value
-     *
      * @throws \ServiceBus\EventSourcing\Indexes\Exceptions\InvalidValueType
      */
-    private static function assertIsScalar($value): void
+    private static function assertIsScalar(int|float|string|bool $value): void
     {
-        if (false === \is_scalar($value))
+        /**
+         * @psalm-suppress RedundantCondition
+         * @psalm-suppress TypeDoesNotContainType
+         */
+        if (\is_scalar($value) === false)
         {
             throw new InvalidValueType(
                 \sprintf('The value must be of type "scalar". "%s" passed', \gettype($value))

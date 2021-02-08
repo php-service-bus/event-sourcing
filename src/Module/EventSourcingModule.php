@@ -3,20 +3,18 @@
 /**
  * Event Sourcing implementation module.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Module;
 
 use ServiceBus\Common\Module\ServiceBusModule;
 use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
-use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
-use ServiceBus\EventSourcing\EventStream\Serializer\EventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Indexes\Store\IndexStore;
@@ -27,6 +25,7 @@ use ServiceBus\EventSourcing\Snapshots\Store\SnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
+use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
 use ServiceBus\Mutex\InMemory\InMemoryMutexFactory;
 use ServiceBus\Mutex\MutexFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -38,23 +37,35 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 final class EventSourcingModule implements ServiceBusModule
 {
-    /** @var string  */
+    /**
+     * @var string
+     */
     private $eventStoreServiceId;
 
-    /** @var string  */
+    /**
+     * @var string
+     */
     private $snapshotStoreServiceId;
 
-    /** @var string  */
+    /**
+     * @var string
+     */
     private $indexerStore;
 
-    /** @var string|null  */
-    private $databaseAdapterServiceId= null;
+    /**
+     * @var string|null
+     */
+    private $databaseAdapterServiceId;
 
-    /** @var string|null  */
-    private $customEventSerializerServiceId= null;
+    /**
+     * @var string|null
+     */
+    private $customEventSerializerServiceId;
 
-    /** @var string|null  */
-    private $customSnapshotStrategyServiceId = null;
+    /**
+     * @var string|null
+     */
+    private $customSnapshotStrategyServiceId;
 
     public static function withSqlStorage(string $databaseAdapterServiceId): self
     {
@@ -83,13 +94,10 @@ final class EventSourcingModule implements ServiceBusModule
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function boot(ContainerBuilder $containerBuilder): void
     {
         /** Default configuration used */
-        if (null !== $this->databaseAdapterServiceId)
+        if ($this->databaseAdapterServiceId !== null)
         {
             $storeArguments = [new Reference($this->databaseAdapterServiceId)];
 
@@ -108,7 +116,7 @@ final class EventSourcingModule implements ServiceBusModule
 
     private function registerMutexFactory(ContainerBuilder $containerBuilder): void
     {
-        if (false === $containerBuilder->hasDefinition(MutexFactory::class))
+        if ($containerBuilder->hasDefinition(MutexFactory::class) === false)
         {
             $containerBuilder->addDefinitions([
                 MutexFactory::class => new Definition(InMemoryMutexFactory::class),
@@ -134,7 +142,7 @@ final class EventSourcingModule implements ServiceBusModule
     {
         $serializer = null;
 
-        if (null !== $this->customEventSerializerServiceId)
+        if ($this->customEventSerializerServiceId !== null)
         {
             $serializer = new Reference($this->customEventSerializerServiceId);
         }
@@ -142,13 +150,11 @@ final class EventSourcingModule implements ServiceBusModule
         {
             $containerBuilder->addDefinitions(
                 [
-                    EventSerializer::class => (new Definition(DefaultEventSerializer::class))->setArguments([
-                        new Reference('service_bus.decoder.default_handler'),
-                    ]),
+                    SymfonySerializer::class => new Definition(SymfonySerializer::class),
                 ]
             );
 
-            $serializer = new Reference(EventSerializer::class);
+            $serializer = new Reference(SymfonySerializer::class);
         }
 
         $arguments = [
@@ -171,7 +177,7 @@ final class EventSourcingModule implements ServiceBusModule
 
     private function registerSnapshotter(ContainerBuilder $containerBuilder): void
     {
-        if (null === $this->customSnapshotStrategyServiceId)
+        if ($this->customSnapshotStrategyServiceId === null)
         {
             $containerBuilder->addDefinitions([
                 SnapshotTrigger::class => new Definition(SnapshotVersionTrigger::class, [30]),
@@ -191,11 +197,6 @@ final class EventSourcingModule implements ServiceBusModule
         ]);
     }
 
-    /**
-     * @param string $eventStoreServiceId
-     * @param string $snapshotStoreServiceId
-     * @param string $indexerStore
-     */
     private function __construct(string $eventStoreServiceId, string $snapshotStoreServiceId, string $indexerStore)
     {
         $this->eventStoreServiceId    = $eventStoreServiceId;

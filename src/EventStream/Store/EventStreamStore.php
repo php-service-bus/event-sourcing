@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
@@ -30,7 +30,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      *
      * @return Promise<void>
-     *
      */
     public function save(StoredAggregateEventStream $aggregateEventStream): Promise;
 
@@ -42,7 +41,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      *
      * @return Promise<void>
-     *
      */
     public function append(StoredAggregateEventStream $aggregateEventStream): Promise;
 
@@ -55,7 +53,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      *
      * @return Promise<\ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream|null>
-     *
      */
     public function load(
         AggregateId $id,
@@ -71,7 +68,6 @@ interface EventStreamStore
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      *
      * @return Promise<void>
-     *
      */
     public function close(AggregateId $id): Promise;
 

@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -17,7 +17,7 @@ use Psr\Log\NullLogger;
 use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\IndexProvider;
 use ServiceBus\EventSourcing\Module\EventSourcingModule;
-use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
+use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\DoctrineDBAL\DoctrineDBALAdapter;
@@ -32,10 +32,6 @@ final class EventSourcingModuleTest extends TestCase
 {
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function createSqlStore(): void
     {
@@ -43,8 +39,7 @@ final class EventSourcingModuleTest extends TestCase
         $containerBuilder->addDefinitions([
             StorageConfiguration::class           => (new Definition(StorageConfiguration::class))->setArguments(['sqlite:///:memory:']),
             DatabaseAdapter::class                => (new Definition(DoctrineDBALAdapter::class))->setArguments([new Reference(StorageConfiguration::class)]),
-            'service_bus.logger'                  => new Definition(NullLogger::class),
-            'service_bus.decoder.default_handler' => new Definition(SymfonyMessageSerializer::class),
+            'service_bus.logger'                  => new Definition(NullLogger::class)
         ]);
 
         $module = EventSourcingModule::withSqlStorage(DatabaseAdapter::class);

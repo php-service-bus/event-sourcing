@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -44,11 +44,6 @@ final class IndexProviderTest extends TestCase
      */
     private $indexProvider;
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
@@ -71,7 +66,7 @@ final class IndexProviderTest extends TestCase
         {
             $queries = \array_filter(
                 \explode(';', \file_get_contents($schema)),
-                static function(string $element): ?string
+                static function (string $element): ?string
                 {
                     $element = \trim($element);
 
@@ -86,11 +81,6 @@ final class IndexProviderTest extends TestCase
         }
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
@@ -103,11 +93,6 @@ final class IndexProviderTest extends TestCase
         self::$adapter = null;
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -116,11 +101,6 @@ final class IndexProviderTest extends TestCase
         $this->indexProvider = new IndexProvider($this->indexesStore);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -132,10 +112,6 @@ final class IndexProviderTest extends TestCase
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function save(): void
     {
@@ -145,22 +121,18 @@ final class IndexProviderTest extends TestCase
         /** @var bool $result */
         $result = wait($this->indexProvider->add($index, $value));
 
-        static::assertThat($result, new IsType('bool'));
-        static::assertTrue($result);
+        self::assertThat($result, new IsType('bool'));
+        self::assertTrue($result);
 
         /** @var IndexValue|null $storedValue */
         $storedValue = wait($this->indexProvider->get($index));
 
-        static::assertNotNull($storedValue);
-        static::assertSame($value->value, $storedValue->value);
+        self::assertNotNull($storedValue);
+        self::assertSame($value->value, $storedValue->value);
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function saveDuplicate(): void
     {
@@ -170,22 +142,18 @@ final class IndexProviderTest extends TestCase
         /** @var bool $result */
         $result = wait($this->indexProvider->add($index, $value));
 
-        static::assertThat($result, new IsType('bool'));
-        static::assertTrue($result);
+        self::assertThat($result, new IsType('bool'));
+        self::assertTrue($result);
 
         /** @var bool $result */
         $result = wait($this->indexProvider->add($index, $value));
 
-        static::assertThat($result, new IsType('bool'));
-        static::assertFalse($result);
+        self::assertThat($result, new IsType('bool'));
+        self::assertFalse($result);
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function update(): void
     {
@@ -201,16 +169,12 @@ final class IndexProviderTest extends TestCase
         /** @var IndexValue|null $storedValue */
         $storedValue = wait($this->indexProvider->get($index));
 
-        static::assertNotNull($storedValue);
-        static::assertSame($newValue->value, $storedValue->value);
+        self::assertNotNull($storedValue);
+        self::assertSame($newValue->value, $storedValue->value);
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function remove(): void
     {
@@ -220,25 +184,21 @@ final class IndexProviderTest extends TestCase
         wait($this->indexProvider->add($index, $value));
         wait($this->indexProvider->remove($index));
 
-        static::assertNull(wait($this->indexProvider->get($index)));
+        self::assertNull(wait($this->indexProvider->get($index)));
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
-     *
-     * @return void
      */
     public function has(): void
     {
         $index = new IndexKey(__CLASS__, 'testKey');
         $value = new IndexValue(__METHOD__);
 
-        static::assertFalse(wait($this->indexProvider->has($index)));
+        self::assertFalse(wait($this->indexProvider->has($index)));
 
         wait($this->indexProvider->add($index, $value));
 
-        static::assertTrue(wait($this->indexProvider->has($index)));
+        self::assertTrue(wait($this->indexProvider->has($index)));
     }
 }

@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Indexes;
 
@@ -22,10 +22,18 @@ use ServiceBus\EventSourcing\Indexes\Exceptions\ValueKeyCantBeEmpty;
  */
 final class IndexKey
 {
-    /** @var string  */
+    /**
+     * @psalm-readonly
+     *
+     * @var string
+     */
     public $indexName;
 
-    /** @var string  */
+    /**
+     * @psalm-readonly
+     *
+     * @var string
+     */
     public $valueKey;
 
     /**
@@ -46,7 +54,7 @@ final class IndexKey
      */
     private static function assertIndexNameIsNotEmpty(string $indexName): void
     {
-        if ('' === $indexName)
+        if ($indexName === '')
         {
             throw new IndexNameCantBeEmpty('Index name can\'t be empty');
         }
@@ -57,7 +65,7 @@ final class IndexKey
      */
     private static function assertValueKeyIsNotEmpty(string $valueKey): void
     {
-        if ('' === $valueKey)
+        if ($valueKey === '')
         {
             throw new ValueKeyCantBeEmpty('Value key can\'t be empty');
         }

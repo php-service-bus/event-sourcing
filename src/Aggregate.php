@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing;
 
@@ -71,7 +71,7 @@ abstract class Aggregate
      *
      * @var \DateTimeImmutable|null
      */
-    private $closedAt = null;
+    private $closedAt;
 
     final public function __construct(AggregateId $id)
     {
@@ -107,7 +107,7 @@ abstract class Aggregate
      */
     final protected function raise(object $event): void
     {
-        if (null !== $this->closedAt)
+        if ($this->closedAt !== null)
         {
             throw new AttemptToChangeClosedStream($this->id);
         }
@@ -178,11 +178,11 @@ abstract class Aggregate
         $this->clearEvents();
 
         return new AggregateEventStream(
-            $this->id,
-            $aggregateClass,
-            $events,
-            $this->createdAt,
-            $this->closedAt
+            id: $this->id,
+            aggregateClass: $aggregateClass,
+            events: $events,
+            createdAt: $this->createdAt,
+            closedAt: $this->closedAt
         );
     }
 
@@ -215,7 +215,12 @@ abstract class Aggregate
     {
         $this->increaseVersion(self::INCREASE_VERSION_STEP);
 
-        $this->events[] = AggregateEvent::create(uuid(), $event, $this->version, now());
+        $this->events[] = AggregateEvent::create(
+            id: uuid(),
+            event: $event,
+            playhead: $this->version,
+            occurredAt: now()
+        );
     }
 
     /**
@@ -252,7 +257,7 @@ abstract class Aggregate
          *
          * @return void
          */
-        $closure = function(object $event) use ($listenerName): void
+        $closure = function (object $event) use ($listenerName): void
         {
             if (\method_exists($this, $listenerName))
             {

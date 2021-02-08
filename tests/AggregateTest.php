@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -28,8 +28,6 @@ final class AggregateTest extends TestCase
 {
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function changeClosedStreamState(): void
     {
@@ -47,23 +45,21 @@ final class AggregateTest extends TestCase
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
         $aggregateEvent = \end($events);
 
-        static::assertInstanceOf(AggregateClosed::class, $aggregateEvent->event);
+        self::assertInstanceOf(AggregateClosed::class, $aggregateEvent->event);
 
         /** @var AggregateClosed $aggregateClosedEvent */
         $aggregateClosedEvent = $aggregateEvent->event;
 
-        static::assertTrue(isUuid($aggregateClosedEvent->id));
-        static::assertInstanceOf(\DateTimeImmutable::class, $aggregateClosedEvent->datetime);
-        static::assertSame(TestAggregate::class, $aggregateClosedEvent->aggregateClass);
-        static::assertSame(TestAggregateId::class, $aggregateClosedEvent->idClass);
+        self::assertTrue(isUuid($aggregateClosedEvent->id));
+        self::assertInstanceOf(\DateTimeImmutable::class, $aggregateClosedEvent->datetime);
+        self::assertSame(TestAggregate::class, $aggregateClosedEvent->aggregateClass);
+        self::assertSame(TestAggregateId::class, $aggregateClosedEvent->idClass);
 
         $aggregate->firstAction('root');
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function aggregateCreated(): void
     {
@@ -77,14 +73,14 @@ final class AggregateTest extends TestCase
         /** @var \ServiceBus\EventSourcing\EventStream\AggregateEvent $aggregateEvent */
         $aggregateEvent = \end($events);
 
-        static::assertInstanceOf(AggregateCreated::class, $aggregateEvent->event);
+        self::assertInstanceOf(AggregateCreated::class, $aggregateEvent->event);
 
         /** @var AggregateCreated $aggregateCreatedEvent */
         $aggregateCreatedEvent = $aggregateEvent->event;
 
-        static::assertTrue(isUuid($aggregateCreatedEvent->id));
-        static::assertInstanceOf(\DateTimeImmutable::class, $aggregateCreatedEvent->datetime);
-        static::assertSame(TestAggregate::class, $aggregateCreatedEvent->aggregateClass);
-        static::assertSame(TestAggregateId::class, $aggregateCreatedEvent->idClass);
+        self::assertTrue(isUuid($aggregateCreatedEvent->id));
+        self::assertInstanceOf(\DateTimeImmutable::class, $aggregateCreatedEvent->datetime);
+        self::assertSame(TestAggregate::class, $aggregateCreatedEvent->aggregateClass);
+        self::assertSame(TestAggregateId::class, $aggregateCreatedEvent->idClass);
     }
 }

@@ -11,7 +11,7 @@
   "authors": [
     {
       "name": "Masiukevich Maksim",
-      "email": "dev@async-php.com",
+      "email": "contacts@desperado.dev",
       "homepage": "https://github.com/mmasiukevich",
       "role": "Maintainer"
     }
@@ -22,33 +22,35 @@
       "ServiceBus\\EventSourcing\\": "src/"
     },
     "files": [
-      "src/functions.php",
-      "src/EventStream/Store/functions.php"
+      "src/functions.php"
     ]
   },
   "autoload-dev": {
     "psr-4": {
-      "ServiceBus\\EventSourcing\\Tests\\": "tests/"
+      "ServiceBus\\EventSourcing\\Tests\\": "tests/",
+      "ServiceBus\\Common\\Tests\\": "vendor/php-service-bus/common/tests/",
+      "ServiceBus\\Storage\\Tests\\": "vendor/php-service-bus/storage/tests/",
+      "ServiceBus\\MessageSerializer\\Tests\\": "vendor/php-service-bus/message-serializer/tests/",
+      "ServiceBus\\Mutex\\Tests\\": "vendor/php-service-bus/mutex/tests/"
     },
     "files": [
-      "src/functions.php",
-      "src/EventStream/Store/functions.php"
+      "src/functions.php"
     ]
   },
   "require": {
-    "php": ">=7.4",
-    "php-service-bus/common": "v4.1.*",
-    "php-service-bus/storage": "v4.1.*",
-    "php-service-bus/message-serializer": "v4.1.*",
-    "php-service-bus/mutex": "v4.1.*"
+    "php": ">=8.0",
+    "php-service-bus/common": "v5.0.*",
+    "php-service-bus/storage": "v5.0.*",
+    "php-service-bus/message-serializer": "v5.0.*",
+    "php-service-bus/mutex": "v5.0.*"
   },
   "require-dev": {
-    "php-service-bus/code-style-config": "v0.1.*",
-    "doctrine/dbal": "v2.10.*",
-    "phpunit/phpunit": "v9.2.*",
-    "vimeo/psalm": "v3.13.*",
+    "php-service-bus/code-style-config": "v1.3.*",
+    "doctrine/dbal": "v3.0.*",
+    "phpunit/phpunit": "v9.5.*",
+    "vimeo/psalm": "v4.3.*",
     "phpstan/phpstan": "v0.12.*",
-    "monolog/monolog": "2.1.*"
+    "monolog/monolog": "2.2.*"
   },
   "prefer-stable": true,
   "minimum-stability": "stable",

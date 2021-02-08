@@ -3,7 +3,7 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -13,9 +13,8 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Tests\EventStream\Serializer;
 
 use PHPUnit\Framework\TestCase;
-use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
-use ServiceBus\EventSourcing\EventStream\Serializer\Exceptions\SerializeEventFailed;
-use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
+use ServiceBus\MessageSerializer\Exceptions\DecodeMessageFailed;
+use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
 
 /**
  *
@@ -29,13 +28,11 @@ final class DefaultEventSerializerTest extends TestCase
      */
     public function unserializeWrongMessageType(): void
     {
-        $this->expectException(SerializeEventFailed::class);
+        $this->expectException(DecodeMessageFailed::class);
         $this->expectExceptionMessage('Message deserialization failed: Syntax error');
 
-        $serializer = new DefaultEventSerializer(
-            new SymfonyMessageSerializer()
-        );
+        $serializer = new SymfonySerializer();
 
-        $serializer->unserialize('', 'qwerty');
+        $serializer->decode('', 'qwerty');
     }
 }

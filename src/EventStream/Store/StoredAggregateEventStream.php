@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
@@ -22,6 +22,8 @@ final class StoredAggregateEventStream
     /**
      * Aggregate id.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $aggregateId;
@@ -29,6 +31,7 @@ final class StoredAggregateEventStream
     /**
      * Aggregate id class.
      *
+     * @psalm-readonly
      * @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId>
      *
      * @var string
@@ -38,6 +41,7 @@ final class StoredAggregateEventStream
     /**
      * Aggregate class.
      *
+     * @psalm-readonly
      * @psalm-var class-string<\ServiceBus\EventSourcing\Aggregate>
      *
      * @var string
@@ -47,6 +51,7 @@ final class StoredAggregateEventStream
     /**
      * Stored events data.
      *
+     * @psalm-readonly
      * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
      *
      * @var \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
@@ -56,6 +61,8 @@ final class StoredAggregateEventStream
     /**
      * Stream created at datetime.
      *
+     * @psalm-readonly
+     *
      * @var string
      */
     public $createdAt;
@@ -63,9 +70,11 @@ final class StoredAggregateEventStream
     /**
      * Stream closed at datetime.
      *
+     * @psalm-readonly
+     *
      * @var string|null
      */
-    public $closedAt = null;
+    public $closedAt;
 
     /**
      * @psalm-param class-string<\ServiceBus\EventSourcing\AggregateId> $aggregateIdClass

@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -12,6 +12,7 @@ declare(strict_types = 1);
 
 namespace ServiceBus\EventSourcing\Tests;
 
+use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
 use function Amp\Promise\wait;
 use function ServiceBus\Storage\Sql\fetchOne;
 use Monolog\Handler\TestHandler;
@@ -20,7 +21,6 @@ use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
-use ServiceBus\EventSourcing\EventStream\Serializer\DefaultEventSerializer;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Exceptions\DuplicateAggregate;
@@ -32,7 +32,6 @@ use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
 use ServiceBus\EventSourcing\Tests\stubs\Context;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
-use ServiceBus\MessageSerializer\Symfony\SymfonyMessageSerializer;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
@@ -45,7 +44,7 @@ final class EventSourcingProviderTest extends TestCase
     /**
      * @var DatabaseAdapter
      */
-    private static $adapter = null;
+    private static $adapter;
 
     /**
      * @var EventStreamStore
@@ -77,11 +76,6 @@ final class EventSourcingProviderTest extends TestCase
      */
     public $testLogHandler;
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
@@ -104,7 +98,7 @@ final class EventSourcingProviderTest extends TestCase
         {
             $queries = \array_filter(
                 \explode(';', \file_get_contents($schema)),
-                static function(string $element): ?string
+                static function (string $element): ?string
                 {
                     $element = \trim($element);
 
@@ -119,11 +113,6 @@ final class EventSourcingProviderTest extends TestCase
         }
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
@@ -136,11 +125,6 @@ final class EventSourcingProviderTest extends TestCase
         self::$adapter = null;
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -152,20 +136,13 @@ final class EventSourcingProviderTest extends TestCase
         $this->eventStreamRepository = new EventStreamRepository(
             $this->eventStore,
             $this->snapshotter,
-            new DefaultEventSerializer(
-                new SymfonyMessageSerializer()
-            ),
+            new SymfonySerializer(),
             new Logger('tests', [$this->testLogHandler])
         );
 
         $this->eventSourcingProvider = new EventSourcingProvider($this->eventStreamRepository);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws \Throwable
-     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -179,8 +156,6 @@ final class EventSourcingProviderTest extends TestCase
 
     /**
      * @test
-     *
-     * @return void
      */
     public function flow(): \Generator
     {
@@ -189,18 +164,16 @@ final class EventSourcingProviderTest extends TestCase
 
         yield $this->eventSourcingProvider->save($aggregate, $context);
 
-        static::assertCount(1, $context->messages);
+        self::assertCount(1, $context->messages);
 
         /** @var Aggregate $loadedAggregate */
         $loadedAggregate = yield $this->eventSourcingProvider->load($aggregate->id());
 
-        static::assertNotNull($loadedAggregate);
+        self::assertNotNull($loadedAggregate);
     }
 
     /**
      * @test
-     *
-     * @return void
      */
     public function saveDuplicate(): \Generator
     {
@@ -216,8 +189,6 @@ final class EventSourcingProviderTest extends TestCase
 
     /**
      * @test
-     *
-     * @return void
      */
     public function successHardDeleteRevert(): \Generator
     {
@@ -235,8 +206,8 @@ final class EventSourcingProviderTest extends TestCase
         yield $this->eventSourcingProvider->save($aggregate, $context);
 
         /** 7 aggregate version */
-        static::assertSame(7, $aggregate->version());
-        static::assertSame('7 event', $aggregate->firstValue());
+        self::assertSame(7, $aggregate->version());
+        self::assertSame('7 event', $aggregate->firstValue());
 
         /** @var TestAggregate $aggregate */
         $aggregate = yield  $this->eventSourcingProvider->revert(
@@ -246,20 +217,18 @@ final class EventSourcingProviderTest extends TestCase
         );
 
         /** 7 aggregate version */
-        static::assertSame(5, $aggregate->version());
-        static::assertSame('5 event', $aggregate->firstValue());
+        self::assertSame(5, $aggregate->version());
+        self::assertSame('5 event', $aggregate->firstValue());
 
         $eventsCount = yield  fetchOne(
             yield self::$adapter->execute('SELECT COUNT(id) as cnt FROM event_store_stream_events')
         );
 
-        static::assertSame(5, $eventsCount['cnt']);
+        self::assertSame(5, $eventsCount['cnt']);
     }
 
     /**
      * @test
-     *
-     * @return void
      */
     public function revertUnknownStream(): \Generator
     {
@@ -273,8 +242,6 @@ final class EventSourcingProviderTest extends TestCase
 
     /**
      * @test
-     *
-     * @return void
      */
     public function revertWithVersionConflict(): \Generator
     {

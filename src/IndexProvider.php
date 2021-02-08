@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing;
 
@@ -38,7 +38,9 @@ final class IndexProvider
      */
     private $mutexFactory;
 
-    /** @var Lock[] */
+    /**
+     * @var Lock[]
+     */
     private $lockCollection = [];
 
     public function __construct(IndexStore $store, ?MutexFactory $mutexFactory = null)
@@ -50,14 +52,14 @@ final class IndexProvider
     /**
      * Receive index value.
      *
-     * Returns \ServiceBus\EventSourcing\Indexes\IndexValue|null
+     * @return Promise<\ServiceBus\EventSourcing\Indexes\IndexValue|null>
      *
      * @throws \ServiceBus\EventSourcing\Exceptions\IndexOperationFailed
      */
     public function get(IndexKey $indexKey): Promise
     {
         return call(
-            function() use ($indexKey): \Generator
+            function () use ($indexKey): \Generator
             {
                 yield from $this->setupMutex($indexKey);
 
@@ -88,14 +90,14 @@ final class IndexProvider
     public function has(IndexKey $indexKey): Promise
     {
         return call(
-            function() use ($indexKey): \Generator
+            function () use ($indexKey): \Generator
             {
                 try
                 {
                     /** @var IndexValue|null $value */
                     $value = yield $this->store->find($indexKey);
 
-                    return null !== $value;
+                    return $value !== null;
                 }
                 catch (\Throwable $throwable)
                 {
@@ -113,7 +115,7 @@ final class IndexProvider
     public function add(IndexKey $indexKey, IndexValue $value): Promise
     {
         return call(
-            function() use ($indexKey, $value): \Generator
+            function () use ($indexKey, $value): \Generator
             {
                 yield from $this->setupMutex($indexKey);
 
@@ -122,9 +124,9 @@ final class IndexProvider
                     /** @var int $affectedRows */
                     $affectedRows = yield $this->store->add($indexKey, $value);
 
-                    return 0 !== $affectedRows;
+                    return  $affectedRows !== 0;
                 }
-                catch (UniqueConstraintViolationCheckFailed $exception)
+                catch (UniqueConstraintViolationCheckFailed)
                 {
                     return false;
                 }
@@ -148,7 +150,7 @@ final class IndexProvider
     public function remove(IndexKey $indexKey): Promise
     {
         return call(
-            function() use ($indexKey): \Generator
+            function () use ($indexKey): \Generator
             {
                 yield from $this->setupMutex($indexKey);
 
@@ -176,7 +178,7 @@ final class IndexProvider
     public function update(IndexKey $indexKey, IndexValue $value): Promise
     {
         return call(
-            function() use ($indexKey, $value): \Generator
+            function () use ($indexKey, $value): \Generator
             {
                 yield from $this->setupMutex($indexKey);
 
@@ -185,7 +187,7 @@ final class IndexProvider
                     /** @var int $affectedRows */
                     $affectedRows = yield $this->store->update($indexKey, $value);
 
-                    return 0 !== $affectedRows;
+                    return $affectedRows !== 0;
                 }
                 catch (\Throwable $throwable)
                 {

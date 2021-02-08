@@ -3,7 +3,7 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
@@ -19,11 +19,15 @@ use ServiceBus\EventSourcing\Aggregate;
  */
 final class TestAggregate extends Aggregate
 {
-    /** @var string|null */
-    private $firstValue = null;
+    /**
+     * @var string|null
+     */
+    private $firstValue;
 
-    /** @var string|null */
-    private $secondValue = null;
+    /**
+     * @var string|null
+     */
+    private $secondValue;
 
     /**
      * @throws \ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream

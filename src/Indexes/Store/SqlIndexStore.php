@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Indexes\Store;
 
@@ -31,7 +31,9 @@ final class SqlIndexStore implements IndexStore
 {
     private const TABLE_NAME = 'event_sourcing_indexes';
 
-    /** @var DatabaseAdapter */
+    /**
+     * @var DatabaseAdapter
+     */
     private $adapter;
 
     public function __construct(DatabaseAdapter $adapter)
@@ -39,13 +41,10 @@ final class SqlIndexStore implements IndexStore
         $this->adapter = $adapter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function find(IndexKey $indexKey): Promise
     {
         return call(
-            function() use ($indexKey): \Generator
+            function () use ($indexKey): \Generator
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
@@ -53,28 +52,30 @@ final class SqlIndexStore implements IndexStore
                 ];
 
                 /** @var \ServiceBus\Storage\Common\ResultSet $resultSet $resultSet */
-                $resultSet = yield find($this->adapter, self::TABLE_NAME, $criteria);
+                $resultSet = yield find(
+                    queryExecutor: $this->adapter,
+                    tableName: self::TABLE_NAME,
+                    criteria: $criteria
+                );
 
-                /** @var array<string, mixed>|null $result */
+                /** @var array<string, int|float|string>|null $result */
                 $result = yield fetchOne($resultSet);
 
                 if (\is_array($result))
                 {
                     return new IndexValue($result['value_data']);
                 }
+
+                return null;
             }
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function add(IndexKey $indexKey, IndexValue $value): Promise
     {
         return call(
-            function() use ($indexKey, $value): \Generator
+            function () use ($indexKey, $value): \Generator
             {
-                /** @var \Latitude\QueryBuilder\Query\InsertQuery $insertQuery */
                 $insertQuery = insertQuery(self::TABLE_NAME, [
                     'index_tag'  => $indexKey->indexName,
                     'value_key'  => $indexKey->valueKey,
@@ -83,43 +84,40 @@ final class SqlIndexStore implements IndexStore
 
                 $compiledQuery = $insertQuery->compile();
 
-                /**
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 *
-                 * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-                 */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                $resultSet = yield $this->adapter->execute(
+                    queryString: $compiledQuery->sql(),
+                    parameters: $compiledQuery->params()
+                );
 
                 return $resultSet->affectedRows();
             }
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function delete(IndexKey $indexKey): Promise
     {
         return call(
-            function() use ($indexKey): \Generator
+            function () use ($indexKey): \Generator
             {
                 $criteria = [
                     equalsCriteria('index_tag', $indexKey->indexName),
                     equalsCriteria('value_key', $indexKey->valueKey),
                 ];
 
-                yield remove($this->adapter, self::TABLE_NAME, $criteria);
+                yield remove(
+                    queryExecutor: $this->adapter,
+                    tableName: self::TABLE_NAME,
+                    criteria: $criteria
+                );
             }
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function update(IndexKey $indexKey, IndexValue $value): Promise
     {
         return call(
-            function() use ($indexKey, $value): \Generator
+            function () use ($indexKey, $value): \Generator
             {
                 $updateQuery = updateQuery(self::TABLE_NAME, ['value_data' => $value->value])
                     ->where(equalsCriteria('index_tag', $indexKey->indexName))
@@ -127,12 +125,11 @@ final class SqlIndexStore implements IndexStore
 
                 $compiledQuery = $updateQuery->compile();
 
-                /**
-                 * @psalm-suppress MixedTypeCoercion Invalid params() docblock
-                 *
-                 * @var \ServiceBus\Storage\Common\ResultSet $resultSet
-                 */
-                $resultSet = yield $this->adapter->execute($compiledQuery->sql(), $compiledQuery->params());
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                $resultSet = yield $this->adapter->execute(
+                    queryString: $compiledQuery->sql(),
+                    parameters: $compiledQuery->params()
+                );
 
                 return $resultSet->affectedRows();
             }

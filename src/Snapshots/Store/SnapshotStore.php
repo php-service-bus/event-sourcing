@@ -3,12 +3,12 @@
 /**
  * Event Sourcing implementation.
  *
- * @author  Maksim Masiukevich <dev@async-php.com>
+ * @author  Maksim Masiukevich <contacts@desperado.dev>
  * @license MIT
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types = 0);
 
 namespace ServiceBus\EventSourcing\Snapshots\Store;
 
@@ -29,7 +29,6 @@ interface SnapshotStore
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      *
      * @return Promise<void>
-     *
      */
     public function save(Snapshot $snapshot): Promise;
 
@@ -40,7 +39,6 @@ interface SnapshotStore
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      *
      * @return Promise<\ServiceBus\EventSourcing\Snapshots\Snapshot|null>
-     *
      */
     public function load(AggregateId $id): Promise;
 
@@ -51,7 +49,6 @@ interface SnapshotStore
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      *
      * @return Promise<void>
-     *
      */
     public function remove(AggregateId $id): Promise;
 }
