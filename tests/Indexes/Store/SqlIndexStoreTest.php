@@ -13,7 +13,6 @@ declare(strict_types = 1);
 namespace ServiceBus\EventSourcing\Tests\Indexes\Store;
 
 use function Amp\Promise\wait;
-use Amp\Loop;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Indexes\IndexKey;
 use ServiceBus\EventSourcing\Indexes\IndexValue;
@@ -79,24 +78,19 @@ final class SqlIndexStoreTest extends TestCase
      */
     public function save(): void
     {
-        Loop::run(
-            function (): \Generator
-            {
-                $index = new IndexKey(__CLASS__, 'testKey');
-                $value = new IndexValue(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
-                /** @var int $count */
-                $count = yield $this->indexStore->add($index, $value);
+        /** @var int $count */
+        $count = wait($this->indexStore->add($index, $value));
 
-                self::assertSame(1, $count);
+        self::assertSame(1, $count);
 
-                /** @var IndexValue|null $storedValue */
-                $storedValue = yield $this->indexStore->find($index);
+        /** @var IndexValue|null $storedValue */
+        $storedValue = wait($this->indexStore->find($index));
 
-                self::assertNotNull($storedValue);
-                self::assertSame($value->value, $storedValue->value);
-            }
-        );
+        self::assertNotNull($storedValue);
+        self::assertSame($value->value, $storedValue->value);
     }
 
     /**
@@ -104,18 +98,13 @@ final class SqlIndexStoreTest extends TestCase
      */
     public function saveDuplicate(): void
     {
-        Loop::run(
-            function (): \Generator
-            {
-                $this->expectException(UniqueConstraintViolationCheckFailed::class);
+        $this->expectException(UniqueConstraintViolationCheckFailed::class);
 
-                $index = new IndexKey(__CLASS__, 'testKey');
-                $value = new IndexValue(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
-                yield $this->indexStore->add($index, $value);
-                yield $this->indexStore->add($index, $value);
-            }
-        );
+        wait($this->indexStore->add($index, $value));
+        wait($this->indexStore->add($index, $value));
     }
 
     /**
@@ -123,45 +112,33 @@ final class SqlIndexStoreTest extends TestCase
      */
     public function update(): void
     {
-        Loop::run(
-            function (): \Generator
-            {
-                $index = new IndexKey(__CLASS__, 'testKey');
-                $value = new IndexValue(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
-                yield $this->indexStore->add($index, $value);
+        wait($this->indexStore->add($index, $value));
 
-                $newValue = new IndexValue('qwerty');
+        $newValue = new IndexValue('qwerty');
 
-                yield $this->indexStore->update($index, $newValue);
+        wait($this->indexStore->update($index, $newValue));
 
-                /** @var IndexValue|null $storedValue */
-                $storedValue = yield $this->indexStore->find($index);
+        /** @var IndexValue|null $storedValue */
+        $storedValue = wait($this->indexStore->find($index));
 
-                self::assertNotNull($storedValue);
-                self::assertSame($newValue->value, $storedValue->value);
-            }
-        );
+        self::assertNotNull($storedValue);
+        self::assertSame($newValue->value, $storedValue->value);
     }
 
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function remove(): void
     {
-        Loop::run(
-            function (): \Generator
-            {
-                $index = new IndexKey(__CLASS__, 'testKey');
-                $value = new IndexValue(__METHOD__);
+        $index = new IndexKey(__CLASS__, 'testKey');
+        $value = new IndexValue(__METHOD__);
 
-                yield $this->indexStore->add($index, $value);
-                yield $this->indexStore->delete($index);
+        wait($this->indexStore->add($index, $value));
+        wait($this->indexStore->delete($index));
 
-                self::assertNull(wait($this->indexStore->find($index)));
-            }
-        );
+        self::assertNull(wait($this->indexStore->find($index)));
     }
 }

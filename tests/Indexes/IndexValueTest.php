@@ -22,8 +22,6 @@ final class IndexValueTest extends TestCase
 {
     /**
      * @test
-     *
-     * @throws \Throwable
      */
     public function successCreate(): void
     {

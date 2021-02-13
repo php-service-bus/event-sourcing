@@ -157,17 +157,17 @@ final class EventSourcingProviderTest extends TestCase
     /**
      * @test
      */
-    public function flow(): \Generator
+    public function flow(): void
     {
         $context   = new Context();
         $aggregate = new TestAggregate(TestAggregateId::new());
 
-        yield $this->eventSourcingProvider->save($aggregate, $context);
+        wait($this->eventSourcingProvider->save($aggregate, $context));
 
         self::assertCount(1, $context->messages);
 
         /** @var Aggregate $loadedAggregate */
-        $loadedAggregate = yield $this->eventSourcingProvider->load($aggregate->id());
+        $loadedAggregate = wait($this->eventSourcingProvider->load($aggregate->id()));
 
         self::assertNotNull($loadedAggregate);
     }
@@ -175,7 +175,7 @@ final class EventSourcingProviderTest extends TestCase
     /**
      * @test
      */
-    public function saveDuplicate(): \Generator
+    public function saveDuplicate(): void
     {
         $this->expectException(DuplicateAggregate::class);
 
@@ -183,19 +183,19 @@ final class EventSourcingProviderTest extends TestCase
 
         $context = new Context();
 
-        yield $this->eventSourcingProvider->save(new TestAggregate($id), $context);
-        yield $this->eventSourcingProvider->save(new TestAggregate($id), $context);
+        wait($this->eventSourcingProvider->save(new TestAggregate($id), $context));
+        wait($this->eventSourcingProvider->save(new TestAggregate($id), $context));
     }
 
     /**
      * @test
      */
-    public function successHardDeleteRevert(): \Generator
+    public function successHardDeleteRevert(): void
     {
         $context   = new Context();
         $aggregate = new TestAggregate(TestAggregateId::new());
 
-        yield $this->eventSourcingProvider->save($aggregate, $context);
+        wait($this->eventSourcingProvider->save($aggregate, $context));
 
         foreach (\range(1, 6) as $item)
         {
@@ -203,25 +203,29 @@ final class EventSourcingProviderTest extends TestCase
         }
 
         /** 7 aggregate version */
-        yield $this->eventSourcingProvider->save($aggregate, $context);
+        wait($this->eventSourcingProvider->save($aggregate, $context));
 
         /** 7 aggregate version */
         self::assertSame(7, $aggregate->version());
         self::assertSame('7 event', $aggregate->firstValue());
 
         /** @var TestAggregate $aggregate */
-        $aggregate = yield  $this->eventSourcingProvider->revert(
-            $aggregate,
-            5,
-            EventStreamRepository::REVERT_MODE_DELETE
+        $aggregate = wait(
+            $this->eventSourcingProvider->revert(
+                $aggregate,
+                5,
+                EventStreamRepository::REVERT_MODE_DELETE
+            )
         );
 
         /** 7 aggregate version */
         self::assertSame(5, $aggregate->version());
         self::assertSame('5 event', $aggregate->firstValue());
 
-        $eventsCount = yield  fetchOne(
-            yield self::$adapter->execute('SELECT COUNT(id) as cnt FROM event_store_stream_events')
+        $eventsCount = wait(
+            fetchOne(
+                wait(self::$adapter->execute('SELECT COUNT(id) as cnt FROM event_store_stream_events'))
+            )
         );
 
         self::assertSame(5, $eventsCount['cnt']);
@@ -230,20 +234,22 @@ final class EventSourcingProviderTest extends TestCase
     /**
      * @test
      */
-    public function revertUnknownStream(): \Generator
+    public function revertUnknownStream(): void
     {
         $this->expectException(RevertAggregateVersionFailed::class);
 
-        yield $this->eventSourcingProvider->revert(
-            new TestAggregate(TestAggregateId::new()),
-            20
+        wait(
+            $this->eventSourcingProvider->revert(
+                new TestAggregate(TestAggregateId::new()),
+                20
+            )
         );
     }
 
     /**
      * @test
      */
-    public function revertWithVersionConflict(): \Generator
+    public function revertWithVersionConflict(): void
     {
         $this->expectException(RevertAggregateVersionFailed::class);
 
@@ -254,14 +260,14 @@ final class EventSourcingProviderTest extends TestCase
         $aggregate->firstAction('root');
         $aggregate->firstAction('qwertyRoot');
 
-        yield $this->eventSourcingProvider->save($aggregate, $context);
+        wait($this->eventSourcingProvider->save($aggregate, $context));
 
         /** @var TestAggregate $aggregate */
-        $aggregate = yield $this->eventSourcingProvider->revert($aggregate, 2);
+        $aggregate = wait($this->eventSourcingProvider->revert($aggregate, 2));
 
         $aggregate->firstAction('abube');
 
-        yield $this->eventSourcingProvider->save($aggregate, $context);
-        yield $this->eventSourcingProvider->revert($aggregate, 3);
+        wait($this->eventSourcingProvider->save($aggregate, $context));
+        wait($this->eventSourcingProvider->revert($aggregate, 3));
     }
 }
