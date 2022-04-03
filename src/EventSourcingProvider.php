@@ -37,10 +37,12 @@ final class EventSourcingProvider
      */
     private $mutexService;
 
-    public function __construct(EventStreamRepository $repository, MutexService $mutexService)
-    {
-        $this->repository   = $repository;
-        $this->mutexService = $mutexService;
+    public function __construct(
+        EventStreamRepository $repository,
+        MutexService          $mutexService
+    ) {
+        $this->repository    = $repository;
+        $this->mutexService  = $mutexService;
     }
 
     /**
@@ -145,11 +147,11 @@ final class EventSourcingProvider
      * @throws \ServiceBus\EventSourcing\Exceptions\RevertAggregateVersionFailed
      */
     public function revert(
-        AggregateId    $id,
+        AggregateId       $id,
         ServiceBusContext $context,
-        int            $toVersion,
-        callable       $onReverted,
-        RevertModeType $mode = RevertModeType::SOFT_DELETE
+        int               $toVersion,
+        callable          $onReverted,
+        RevertModeType    $mode = RevertModeType::SOFT_DELETE
     ): Promise {
         return call(
             function () use ($id, $context, $toVersion, $mode, $onReverted): \Generator

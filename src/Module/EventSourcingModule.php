@@ -19,6 +19,7 @@ use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Indexes\Store\IndexStore;
 use ServiceBus\EventSourcing\Indexes\Store\SqlIndexStore;
+use ServiceBus\EventSourcing\IndexProvider;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 use ServiceBus\EventSourcing\Snapshots\Store\SnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
@@ -112,8 +113,8 @@ final class EventSourcingModule implements ServiceBusModule
 
         $this->registerMutexFactory($containerBuilder);
         $this->registerSnapshotter($containerBuilder);
-        $this->registerEventSourcingProvider($containerBuilder);
         $this->registerIndexer($containerBuilder);
+        $this->registerEventSourcingProvider($containerBuilder);
     }
 
     private function registerMutexFactory(ContainerBuilder $containerBuilder): void
@@ -129,7 +130,12 @@ final class EventSourcingModule implements ServiceBusModule
     private function registerIndexer(ContainerBuilder $containerBuilder): void
     {
         $containerBuilder->addDefinitions([
-            $this->indexerStore => (new Definition(SqlIndexStore::class))->setArguments([new Reference((string) $this->databaseAdapterServiceId)]),
+            $this->indexerStore  => (new Definition(SqlIndexStore::class))->setArguments([new Reference((string) $this->databaseAdapterServiceId)]),
+            IndexProvider::class => (new Definition(IndexProvider::class))->setArguments(
+                [
+                    new Reference($this->indexerStore)
+                ]
+            ),
         ]);
     }
 
