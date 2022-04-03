@@ -1,7 +1,3 @@
 parameters:
     checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false
-    ignoreErrors:
-        -
-            message: '#Strict comparison using#'
-            path: %currentWorkingDirectory%/src/Indexes/IndexValue.php

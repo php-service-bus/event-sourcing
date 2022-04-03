@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
+
+/** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
@@ -8,11 +10,10 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace ServiceBus\EventSourcing\Tests\Indexes\Store;
 
-use function Amp\Promise\wait;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Indexes\IndexKey;
 use ServiceBus\EventSourcing\Indexes\IndexValue;
@@ -21,6 +22,7 @@ use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
+use function Amp\Promise\wait;
 
 /**
  *

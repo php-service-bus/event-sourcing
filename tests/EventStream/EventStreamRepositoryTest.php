@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
+
+/** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
@@ -8,20 +10,17 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace ServiceBus\EventSourcing\Tests\EventStream;
 
-use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
-use function Amp\Promise\wait;
-use function ServiceBus\Common\invokeReflectionMethod;
-use function ServiceBus\Storage\Sql\fetchOne;
 use PHPUnit\Framework\TestCase;
 use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
 use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist;
 use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed;
+use ServiceBus\EventSourcing\EventStream\RevertModeType;
 use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
@@ -30,10 +29,15 @@ use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregate;
 use ServiceBus\EventSourcing\Tests\stubs\TestAggregateId;
+use ServiceBus\MessageSerializer\Symfony\SymfonyJsonObjectSerializer;
+use ServiceBus\MessageSerializer\Symfony\SymfonyObjectDenormalizer;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\AmpPosgreSQL\AmpPostgreSQLAdapter;
+use function Amp\Promise\wait;
+use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\Storage\Sql\fetchOne;
 
 /**
  *
@@ -97,9 +101,9 @@ final class EventStreamRepositoryTest extends TestCase
     {
         parent::tearDownAfterClass();
 
-        wait(self::$adapter->execute('DROP TABLE event_store_stream CASCADE'));
-        wait(self::$adapter->execute('DROP TABLE event_store_stream_events CASCADE'));
-        wait(self::$adapter->execute('DROP TABLE event_store_snapshots CASCADE'));
+        wait(self::$adapter->execute('DROP TABLE IF EXISTS event_store_stream CASCADE'));
+        wait(self::$adapter->execute('DROP TABLE IF EXISTS event_store_stream_events CASCADE'));
+        wait(self::$adapter->execute('DROP TABLE IF EXISTS event_store_snapshots CASCADE'));
     }
 
     protected function setUp(): void
@@ -112,7 +116,8 @@ final class EventStreamRepositoryTest extends TestCase
         $this->eventStreamRepository = new EventStreamRepository(
             $this->eventStore,
             $this->snapshotter,
-            new SymfonySerializer()
+            new SymfonyObjectDenormalizer(),
+            new SymfonyJsonObjectSerializer()
         );
     }
 
@@ -220,7 +225,8 @@ final class EventStreamRepositoryTest extends TestCase
                 $this->snapshotStore,
                 new SnapshotVersionTrigger(100500)
             ),
-            new SymfonySerializer()
+            new SymfonyObjectDenormalizer(),
+            new SymfonyJsonObjectSerializer()
         );
 
         $id = TestAggregateId::new();
@@ -261,9 +267,9 @@ final class EventStreamRepositoryTest extends TestCase
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate,
+                $aggregate->id(),
                 5,
-                EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                RevertModeType::SOFT_DELETE
             )
         );
 
@@ -306,9 +312,9 @@ final class EventStreamRepositoryTest extends TestCase
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate,
+                $aggregate->id(),
                 5,
-                EventStreamRepository::REVERT_MODE_DELETE
+                RevertModeType::DELETE
             )
         );
 
@@ -332,7 +338,7 @@ final class EventStreamRepositoryTest extends TestCase
     {
         $this->expectException(EventStreamDoesNotExist::class);
 
-        wait($this->eventStreamRepository->revert(new TestAggregate(TestAggregateId::new()), 20));
+        wait($this->eventStreamRepository->revert(TestAggregateId::new(), 20, RevertModeType::SOFT_DELETE));
     }
 
     /**
@@ -353,9 +359,9 @@ final class EventStreamRepositoryTest extends TestCase
         /** @var TestAggregate $aggregate */
         $aggregate = wait(
             $this->eventStreamRepository->revert(
-                $aggregate,
+                $aggregate->id(),
                 2,
-                EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                RevertModeType::SOFT_DELETE
             )
         );
 
@@ -364,9 +370,9 @@ final class EventStreamRepositoryTest extends TestCase
         wait($this->eventStreamRepository->update($aggregate));
         wait(
             $this->eventStreamRepository->revert(
-                $aggregate,
+                $aggregate->id(),
                 3,
-                EventStreamRepository::REVERT_MODE_SOFT_DELETE
+                RevertModeType::SOFT_DELETE
             )
         );
     }

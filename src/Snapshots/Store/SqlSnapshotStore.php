@@ -8,21 +8,21 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\Snapshots\Store;
 
+use Amp\Promise;
+use ServiceBus\EventSourcing\AggregateId;
+use ServiceBus\EventSourcing\Snapshots\Snapshot;
+use ServiceBus\Storage\Common\BinaryDataDecoder;
+use ServiceBus\Storage\Common\DatabaseAdapter;
 use function Amp\call;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\find;
 use function ServiceBus\Storage\Sql\insertQuery;
 use function ServiceBus\Storage\Sql\remove;
-use Amp\Promise;
-use ServiceBus\EventSourcing\AggregateId;
-use ServiceBus\EventSourcing\Snapshots\Snapshot;
-use ServiceBus\Storage\Common\BinaryDataDecoder;
-use ServiceBus\Storage\Common\DatabaseAdapter;
 
 /**
  *

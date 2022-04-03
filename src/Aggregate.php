@@ -8,26 +8,26 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing;
 
-use function ServiceBus\Common\now;
-use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Contract\AggregateClosed;
 use ServiceBus\EventSourcing\Contract\AggregateCreated;
 use ServiceBus\EventSourcing\EventStream\AggregateEvent;
 use ServiceBus\EventSourcing\EventStream\AggregateEventStream;
 use ServiceBus\EventSourcing\Exceptions\AttemptToChangeClosedStream;
+use function ServiceBus\Common\now;
+use function ServiceBus\Common\uuid;
 
 /**
  * Aggregate base class.
  */
 abstract class Aggregate
 {
-    public const   START_PLAYHEAD_INDEX = 0;
+    public const START_PLAYHEAD_INDEX = 0;
 
-    private const  EVENT_APPLY_PREFIX = 'on';
+    private const EVENT_APPLY_PREFIX = 'on';
 
     private const INTERNAL_EVENTS = [
         AggregateCreated::class,
@@ -53,7 +53,7 @@ abstract class Aggregate
     /**
      * List of applied aggregate events.
      *
-     * @psalm-var array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
+     * @psalm-var list<\ServiceBus\EventSourcing\EventStream\AggregateEvent>
      *
      * @var \ServiceBus\EventSourcing\EventStream\AggregateEvent[]
      */
@@ -215,9 +215,11 @@ abstract class Aggregate
     {
         $this->increaseVersion(self::INCREASE_VERSION_STEP);
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $this->events[] = AggregateEvent::create(
             id: uuid(),
             event: $event,
+            /** @phpstan-ignore-next-line */
             playhead: $this->version,
             occurredAt: now()
         );
@@ -270,6 +272,8 @@ abstract class Aggregate
 
     /**
      * Create event listener name.
+     *
+     * @psalm-return non-empty-string
      */
     private static function createListenerName(object $event): string
     {
@@ -278,15 +282,18 @@ abstract class Aggregate
         /** @var string $latestPart */
         $latestPart = \end($eventListenerMethodNameParts);
 
-        return \sprintf(
+        /** @psalm-var non-empty-string $name */
+        $name = \sprintf(
             '%s%s',
             self::EVENT_APPLY_PREFIX,
             $latestPart
         );
+
+        return $name;
     }
 
     /**
-     * Increase aggregate version.
+     * @psalm-param positive-int $step
      */
     private function increaseVersion(int $step): void
     {

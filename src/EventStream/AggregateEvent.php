@@ -8,7 +8,7 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
@@ -22,6 +22,7 @@ final class AggregateEvent
     /**
      * Event id.
      *
+     * @psalm-var non-empty-string
      * @psalm-readonly
      *
      * @var string
@@ -31,6 +32,7 @@ final class AggregateEvent
     /**
      * Playhead position.
      *
+     * @psalm-var positive-int
      * @psalm-readonly
      *
      * @var int
@@ -64,6 +66,10 @@ final class AggregateEvent
      */
     public $recordedAt;
 
+    /**
+     * @psalm-param non-empty-string $id
+     * @psalm-param positive-int $playhead
+     */
     public static function create(string $id, object $event, int $playhead, \DateTimeImmutable $occurredAt): self
     {
         return new self(
@@ -75,6 +81,10 @@ final class AggregateEvent
         );
     }
 
+    /**
+     * @psalm-param non-empty-string $id
+     * @psalm-param positive-int $playhead
+     */
     public static function restore(
         string $id,
         object $event,
@@ -91,6 +101,10 @@ final class AggregateEvent
         );
     }
 
+    /**
+     * @psalm-param non-empty-string $id
+     * @psalm-param positive-int $playhead
+     */
     private function __construct(
         string $id,
         object $event,

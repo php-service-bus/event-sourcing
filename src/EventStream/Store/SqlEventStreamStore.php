@@ -8,10 +8,19 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
+use Amp\Promise;
+use ServiceBus\EventSourcing\Aggregate;
+use ServiceBus\EventSourcing\AggregateId;
+use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist;
+use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed;
+use ServiceBus\Storage\Common\BinaryDataDecoder;
+use ServiceBus\Storage\Common\DatabaseAdapter;
+use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
+use ServiceBus\Storage\Common\QueryExecutor;
 use function Amp\call;
 use function Latitude\QueryBuilder\field;
 use function ServiceBus\Common\now;
@@ -22,19 +31,7 @@ use function ServiceBus\Storage\Sql\fetchOne;
 use function ServiceBus\Storage\Sql\insertQuery;
 use function ServiceBus\Storage\Sql\selectQuery;
 use function ServiceBus\Storage\Sql\updateQuery;
-use Amp\Promise;
-use ServiceBus\EventSourcing\Aggregate;
-use ServiceBus\EventSourcing\AggregateId;
-use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamDoesNotExist;
-use ServiceBus\EventSourcing\EventStream\Exceptions\EventStreamIntegrityCheckFailed;
-use ServiceBus\Storage\Common\BinaryDataDecoder;
-use ServiceBus\Storage\Common\DatabaseAdapter;
-use ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed;
-use ServiceBus\Storage\Common\QueryExecutor;
 
-/**
- *
- */
 final class SqlEventStreamStore implements EventStreamStore
 {
     private const STREAMS_TABLE = 'event_store_stream';
@@ -83,8 +80,8 @@ final class SqlEventStreamStore implements EventStreamStore
                 $aggregateEventStream = null;
 
                 /**
-                 * @psalm-var  array{
-                 *     id:string,
+                 * @psalm-var array{
+                 *     id:non-empty-string,
                  *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
                  *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
                  *     created_at:string,
@@ -374,7 +371,7 @@ final class SqlEventStreamStore implements EventStreamStore
      * Transform events stream array data to stored representation.
      *
      * @psalm-param  array{
-     *     id:string,
+     *     id:non-empty-string,
      *     identifier_class:class-string<\ServiceBus\EventSourcing\AggregateId>,
      *     aggregate_class:class-string<\ServiceBus\EventSourcing\Aggregate>,
      *     created_at:string,
@@ -406,9 +403,7 @@ final class SqlEventStreamStore implements EventStreamStore
      *
      * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent>
      *
-     * @throws \LogicException
-     *
-     * @return \ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent[]
+     * @throws \RuntimeException
      */
     private static function restoreEvents(BinaryDataDecoder $decoder, ?array $eventsData): array
     {
@@ -418,9 +413,9 @@ final class SqlEventStreamStore implements EventStreamStore
         {
             /**
              * @psalm-var array{
-             *   id:string,
-             *   playhead:string,
-             *   payload:string,
+             *   id:non-empty-string,
+             *   playhead:positive-int,
+             *   payload:non-empty-string,
              *   event_class:class-string,
              *   occured_at:string,
              *   recorded_at:string
@@ -428,12 +423,17 @@ final class SqlEventStreamStore implements EventStreamStore
              */
             foreach ($eventsData as $eventRow)
             {
-                $playhead = (int) $eventRow['playhead'];
-                $payload  = (string) \base64_decode($decoder->unescapeBinary($eventRow['payload']));
+                /** @psalm-var non-empty-string|bool $payload */
+                $payload  = \base64_decode($decoder->unescapeBinary($eventRow['payload']));
 
-                $events[$playhead] = StoredAggregateEvent::restore(
+                if (\is_string($payload) === false)
+                {
+                    throw new \RuntimeException(\sprintf('Unable to decode event `%s` payload', $eventRow['id']));
+                }
+
+                $events[$eventRow['playhead']] = StoredAggregateEvent::restore(
                     eventId: $eventRow['id'],
-                    playheadPosition: $playhead,
+                    playheadPosition: $eventRow['playhead'],
                     eventData: $payload,
                     eventClass: $eventRow['event_class'],
                     occurredAt: $eventRow['occured_at'],
@@ -503,7 +503,7 @@ final class SqlEventStreamStore implements EventStreamStore
                 $storedAggregateEvent->playheadPosition,
                 $storedAggregateEvent->eventClass,
                 \base64_encode($storedAggregateEvent->eventData),
-                $storedAggregateEvent->occuredAt,
+                $storedAggregateEvent->occurredAt,
                 now()->format('Y-m-d H:i:s.u'),
             ];
 

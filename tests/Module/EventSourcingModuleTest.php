@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
+
+/** @noinspection PhpUnhandledExceptionInspection */
 
 /**
  * Event Sourcing implementation.
@@ -8,16 +10,14 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace ServiceBus\EventSourcing\Tests\Module;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use ServiceBus\EventSourcing\EventSourcingProvider;
-use ServiceBus\EventSourcing\IndexProvider;
 use ServiceBus\EventSourcing\Module\EventSourcingModule;
-use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
 use ServiceBus\Storage\Common\DatabaseAdapter;
 use ServiceBus\Storage\Common\StorageConfiguration;
 use ServiceBus\Storage\Sql\DoctrineDBAL\DoctrineDBALAdapter;
@@ -45,12 +45,12 @@ final class EventSourcingModuleTest extends TestCase
         $module = EventSourcingModule::withSqlStorage(DatabaseAdapter::class);
         $module->boot($containerBuilder);
 
-        $containerBuilder->getDefinition(IndexProvider::class)->setPublic(true);
         $containerBuilder->getDefinition(EventSourcingProvider::class)->setPublic(true);
 
         $containerBuilder->compile();
 
         $containerBuilder->get(EventSourcingProvider::class);
-        $containerBuilder->get(IndexProvider::class);
+
+        $this->assertTrue(true);
     }
 }

@@ -8,7 +8,7 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
@@ -56,7 +56,7 @@ final class AggregateEventStream
      * @psalm-readonly
      * @psalm-var array<int, object>
      *
-     * @var object[]
+     * @var list<object>
      */
     public $originEvents;
 
@@ -79,16 +79,16 @@ final class AggregateEventStream
     public $closedAt;
 
     /**
-     * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate> $aggregateClass
+     * @psalm-param class-string<\ServiceBus\EventSourcing\Aggregate>                $aggregateClass
      * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      *
-     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[] $events
+     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[]                 $events
      */
     public function __construct(
-        AggregateId $id,
-        string $aggregateClass,
-        array $events,
-        \DateTimeImmutable $createdAt,
+        AggregateId         $id,
+        string              $aggregateClass,
+        array               $events,
+        \DateTimeImmutable  $createdAt,
         ?\DateTimeImmutable $closedAt
     ) {
         $this->id             = $id;
@@ -100,7 +100,7 @@ final class AggregateEventStream
     }
 
     /**
-     * @psalm-param  array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
+     * @psalm-param array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      *
      * @psalm-return array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent>
      */
@@ -123,7 +123,7 @@ final class AggregateEventStream
      * @psalm-param  array<int, \ServiceBus\EventSourcing\EventStream\AggregateEvent> $events
      * @psalm-return array<int, object>
      *
-     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[] $events
+     * @param \ServiceBus\EventSourcing\EventStream\AggregateEvent[]                  $events
      *
      * @return object[]
      */

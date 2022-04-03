@@ -8,10 +8,14 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\Indexes\Store;
 
+use Amp\Promise;
+use ServiceBus\EventSourcing\Indexes\IndexKey;
+use ServiceBus\EventSourcing\Indexes\IndexValue;
+use ServiceBus\Storage\Common\DatabaseAdapter;
 use function Amp\call;
 use function ServiceBus\Storage\Sql\equalsCriteria;
 use function ServiceBus\Storage\Sql\fetchOne;
@@ -19,10 +23,6 @@ use function ServiceBus\Storage\Sql\find;
 use function ServiceBus\Storage\Sql\insertQuery;
 use function ServiceBus\Storage\Sql\remove;
 use function ServiceBus\Storage\Sql\updateQuery;
-use Amp\Promise;
-use ServiceBus\EventSourcing\Indexes\IndexKey;
-use ServiceBus\EventSourcing\Indexes\IndexValue;
-use ServiceBus\Storage\Common\DatabaseAdapter;
 
 /**
  *

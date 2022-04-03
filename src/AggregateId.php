@@ -8,12 +8,12 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing;
 
-use function ServiceBus\Common\uuid;
 use ServiceBus\EventSourcing\Exceptions\InvalidAggregateIdentifier;
+use function ServiceBus\Common\uuid;
 
 /**
  * Base aggregate identifier class.
@@ -25,6 +25,7 @@ abstract class AggregateId
     /**
      * Identifier.
      *
+     * @psalm-var non-empty-string
      * @var string
      */
     private $id;
@@ -50,6 +51,9 @@ abstract class AggregateId
         $this->id = $id;
     }
 
+    /**
+     * @psalm-return non-empty-string
+     */
     public function toString(): string
     {
         return $this->id;

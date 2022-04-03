@@ -8,11 +8,10 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\Snapshots;
 
-use function Amp\call;
 use Amp\Promise;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -20,6 +19,7 @@ use ServiceBus\EventSourcing\Aggregate;
 use ServiceBus\EventSourcing\AggregateId;
 use ServiceBus\EventSourcing\Snapshots\Store\SnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
+use function Amp\call;
 
 /**
  *

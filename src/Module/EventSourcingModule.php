@@ -8,7 +8,7 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\Module;
 
@@ -19,15 +19,17 @@ use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\SqlEventStreamStore;
 use ServiceBus\EventSourcing\Indexes\Store\IndexStore;
 use ServiceBus\EventSourcing\Indexes\Store\SqlIndexStore;
-use ServiceBus\EventSourcing\IndexProvider;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
 use ServiceBus\EventSourcing\Snapshots\Store\SnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Store\SqlSnapshotStore;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotTrigger;
 use ServiceBus\EventSourcing\Snapshots\Triggers\SnapshotVersionTrigger;
-use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
-use ServiceBus\Mutex\InMemory\InMemoryMutexFactory;
-use ServiceBus\Mutex\MutexFactory;
+use ServiceBus\MessageSerializer\ObjectDenormalizer;
+use ServiceBus\MessageSerializer\ObjectSerializer;
+use ServiceBus\MessageSerializer\Symfony\SymfonyJsonObjectSerializer;
+use ServiceBus\MessageSerializer\Symfony\SymfonyObjectDenormalizer;
+use ServiceBus\Mutex\InMemory\InMemoryMutexService;
+use ServiceBus\Mutex\MutexService;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -116,10 +118,10 @@ final class EventSourcingModule implements ServiceBusModule
 
     private function registerMutexFactory(ContainerBuilder $containerBuilder): void
     {
-        if ($containerBuilder->hasDefinition(MutexFactory::class) === false)
+        if ($containerBuilder->hasDefinition(MutexService::class) === false)
         {
             $containerBuilder->addDefinitions([
-                MutexFactory::class => new Definition(InMemoryMutexFactory::class),
+                MutexService::class => new Definition(InMemoryMutexService::class),
             ]);
         }
     }
@@ -127,20 +129,12 @@ final class EventSourcingModule implements ServiceBusModule
     private function registerIndexer(ContainerBuilder $containerBuilder): void
     {
         $containerBuilder->addDefinitions([
-            $this->indexerStore  => (new Definition(SqlIndexStore::class))->setArguments([new Reference((string) $this->databaseAdapterServiceId)]),
-            IndexProvider::class => (new Definition(IndexProvider::class))->setArguments(
-                [
-                    new Reference($this->indexerStore),
-                    new Reference(MutexFactory::class),
-                ]
-            ),
+            $this->indexerStore => (new Definition(SqlIndexStore::class))->setArguments([new Reference((string) $this->databaseAdapterServiceId)]),
         ]);
     }
 
     private function registerEventSourcingProvider(ContainerBuilder $containerBuilder): void
     {
-        $serializer = null;
-
         if ($this->customEventSerializerServiceId !== null)
         {
             $serializer = new Reference($this->customEventSerializerServiceId);
@@ -149,16 +143,24 @@ final class EventSourcingModule implements ServiceBusModule
         {
             $containerBuilder->addDefinitions(
                 [
-                    SymfonySerializer::class => new Definition(SymfonySerializer::class),
+                    ObjectSerializer::class => new Definition(SymfonyJsonObjectSerializer::class)
                 ]
             );
 
-            $serializer = new Reference(SymfonySerializer::class);
+            $serializer = new Reference(ObjectSerializer::class);
+        }
+
+        if ($containerBuilder->hasDefinition(ObjectDenormalizer::class) === false)
+        {
+            $containerBuilder->addDefinitions(
+                [ObjectDenormalizer::class => new Definition(SymfonyObjectDenormalizer::class)]
+            );
         }
 
         $arguments = [
             new Reference($this->eventStoreServiceId),
             new Reference(Snapshotter::class),
+            new Reference(ObjectDenormalizer::class),
             $serializer,
             new Reference('service_bus.logger'),
         ];
@@ -168,7 +170,7 @@ final class EventSourcingModule implements ServiceBusModule
             EventSourcingProvider::class => (new Definition(EventSourcingProvider::class))->setArguments(
                 [
                     new Reference(EventStreamRepository::class),
-                    new Reference(MutexFactory::class),
+                    new Reference(MutexService::class),
                 ]
             ),
         ]);

@@ -8,19 +8,13 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\EventStream;
 
 use ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEvent;
-use ServiceBus\MessageSerializer\Symfony\SymfonySerializer;
-use function Amp\call;
-use function ServiceBus\Common\createWithoutConstructor;
-use function ServiceBus\Common\datetimeInstantiator;
-use function ServiceBus\Common\datetimeToString;
-use function ServiceBus\Common\invokeReflectionMethod;
-use function ServiceBus\Common\jsonDecode;
-use function ServiceBus\Common\throwableMessage;
+use ServiceBus\MessageSerializer\ObjectDenormalizer;
+use ServiceBus\MessageSerializer\ObjectSerializer;
 use Amp\Promise;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -30,23 +24,31 @@ use ServiceBus\EventSourcing\EventStream\Store\EventStreamStore;
 use ServiceBus\EventSourcing\EventStream\Store\StoredAggregateEventStream;
 use ServiceBus\EventSourcing\Snapshots\Snapshot;
 use ServiceBus\EventSourcing\Snapshots\Snapshotter;
+use function Amp\call;
+use function ServiceBus\Common\createWithoutConstructor;
+use function ServiceBus\Common\datetimeInstantiator;
+use function ServiceBus\Common\datetimeToString;
+use function ServiceBus\Common\invokeReflectionMethod;
+use function ServiceBus\Common\jsonDecode;
+use function ServiceBus\Common\throwableMessage;
 
 /**
  * Repository for working with event streams.
  */
 final class EventStreamRepository
 {
-    public const REVERT_MODE_SOFT_DELETE = 1;
-
-    public const REVERT_MODE_DELETE = 2;
-
     /**
      * @var EventStreamStore
      */
     private $store;
 
     /**
-     * @var SymfonySerializer
+     * @var ObjectDenormalizer
+     */
+    private $denormalizer;
+
+    /**
+     * @var ObjectSerializer
      */
     private $serializer;
 
@@ -61,21 +63,23 @@ final class EventStreamRepository
     private $logger;
 
     public function __construct(
-        EventStreamStore $store,
-        Snapshotter $snapshotter,
-        SymfonySerializer $serializer,
-        ?LoggerInterface $logger = null
+        EventStreamStore   $store,
+        Snapshotter        $snapshotter,
+        ObjectDenormalizer $denormalizer,
+        ObjectSerializer   $serializer,
+        ?LoggerInterface   $logger = null
     ) {
-        $this->store       = $store;
-        $this->snapshotter = $snapshotter;
-        $this->serializer  = $serializer;
-        $this->logger      = $logger ?? new NullLogger();
+        $this->store        = $store;
+        $this->snapshotter  = $snapshotter;
+        $this->denormalizer = $denormalizer;
+        $this->serializer   = $serializer;
+        $this->logger       = $logger ?? new NullLogger();
     }
 
     /**
      * Load aggregate.
      *
-     * @return Promise<\ServiceBus\EventSourcing\Aggregate|null>
+     * @psalm-return Promise<\ServiceBus\EventSourcing\Aggregate|null>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -125,12 +129,10 @@ final class EventStreamRepository
                         fromVersion: $fromStreamVersion
                     );
 
-                    $aggregate = $this->restoreStream(
+                    return $this->restoreStream(
                         aggregate: $aggregate,
                         storedEventStream: $storedEventStream
                     );
-
-                    return $aggregate;
                 }
                 catch (\Throwable $throwable)
                 {
@@ -150,7 +152,7 @@ final class EventStreamRepository
     /**
      * Save a new event stream.
      *
-     * @return Promise<object[]>
+     * @psalm-return Promise<array<int, object>>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -176,13 +178,10 @@ final class EventStreamRepository
 
                 try
                 {
-                    /** @var object[] $events */
-                    $events = yield from $this->doStore(
+                    return yield $this->doStore(
                         aggregate: $aggregate,
                         isNew: true
                     );
-
-                    return $events;
                 }
                 catch (\Throwable $throwable)
                 {
@@ -202,7 +201,7 @@ final class EventStreamRepository
     /**
      * Update existent event stream (append events).
      *
-     * @return Promise<object[]>
+     * @psalm-return Promise<array<int, object>>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -227,13 +226,10 @@ final class EventStreamRepository
 
                 try
                 {
-                    /** @var object[] $events */
-                    $events = yield from $this->doStore(
+                    return yield $this->doStore(
                         aggregate: $aggregate,
                         isNew: false
                     );
-
-                    return $events;
                 }
                 catch (\Throwable $throwable)
                 {
@@ -253,12 +249,7 @@ final class EventStreamRepository
     /**
      * Revert aggregate to specified version.
      *
-     * @return Promise<\ServiceBus\EventSourcing\Aggregate>
-     *
-     * Mode options:
-     *   - 1 (self::REVERT_MODE_SOFT_DELETE): Mark tail events as deleted (soft deletion). There may be version
-     *   conflicts in some situations
-     *   - 2 (self::REVERT_MODE_DELETE): Removes tail events from the database (the best option)
+     * @psalm-return Promise<\ServiceBus\EventSourcing\Aggregate>
      *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
@@ -266,13 +257,11 @@ final class EventStreamRepository
      * @throws \ServiceBus\Storage\Common\Exceptions\InvalidConfigurationOptions
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      */
-    public function revert(Aggregate $aggregate, int $toVersion, int $mode = self::REVERT_MODE_SOFT_DELETE): Promise
+    public function revert(AggregateId $id, int $toVersion, RevertModeType $mode): Promise
     {
         return call(
-            function () use ($aggregate, $toVersion, $mode): \Generator
+            function () use ($id, $toVersion, $mode): \Generator
             {
-                $id = $aggregate->id();
-
                 $idValue = $id->toString();
                 $idClass = \get_class($id);
 
@@ -285,13 +274,13 @@ final class EventStreamRepository
                 try
                 {
                     yield $this->store->revert(
-                        id: $aggregate->id(),
+                        id: $id,
                         toVersion: $toVersion,
-                        force: self::REVERT_MODE_DELETE === $mode
+                        force: RevertModeType::DELETE === $mode
                     );
 
                     /** @var StoredAggregateEventStream|null $storedEventStream */
-                    $storedEventStream = yield $this->store->load($aggregate->id());
+                    $storedEventStream = yield $this->store->load($id);
 
                     /** @var Aggregate $aggregate */
                     $aggregate = $this->restoreStream(
@@ -319,6 +308,8 @@ final class EventStreamRepository
     }
 
     /**
+     * @psalm-return Promise<array<int, object>>
+     *
      * @throws \ServiceBus\Common\Exceptions\DateTimeException
      * @throws \ServiceBus\Common\Exceptions\ReflectionApiException
      * @throws \ServiceBus\Storage\Common\Exceptions\ConnectionFailed
@@ -326,56 +317,61 @@ final class EventStreamRepository
      * @throws \ServiceBus\Storage\Common\Exceptions\StorageInteractingFailed
      * @throws \ServiceBus\Storage\Common\Exceptions\UniqueConstraintViolationCheckFailed
      */
-    private function doStore(Aggregate $aggregate, bool $isNew): \Generator
+    private function doStore(Aggregate $aggregate, bool $isNew): Promise
     {
-        /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $eventStream */
-        $eventStream    = invokeReflectionMethod($aggregate, 'makeStream');
-        $receivedEvents = $eventStream->originEvents;
-
-        $storedEventStream = \array_map(
-            function (AggregateEvent $aggregateEvent): StoredAggregateEvent
+        return call(
+            function () use ($aggregate, $isNew): \Generator
             {
-                /** @psalm-var class-string $eventClass */
-                $eventClass = \get_class($aggregateEvent->event);
+                /** @var \ServiceBus\EventSourcing\EventStream\AggregateEventStream $eventStream */
+                $eventStream    = invokeReflectionMethod($aggregate, 'makeStream');
+                $receivedEvents = $eventStream->originEvents;
 
-                return StoredAggregateEvent::create(
-                    eventId: $aggregateEvent->id,
-                    playheadPosition: $aggregateEvent->playhead,
-                    eventData: $this->serializer->encode($aggregateEvent->event),
-                    eventClass: $eventClass,
-                    occuredAt: $aggregateEvent->occurredAt->format('Y-m-d H:i:s.u')
+                $storedEventStream = \array_map(
+                    function (AggregateEvent $aggregateEvent): StoredAggregateEvent
+                    {
+                        /** @psalm-var class-string $eventClass */
+                        $eventClass = \get_class($aggregateEvent->event);
+
+                        return StoredAggregateEvent::create(
+                            eventId: $aggregateEvent->id,
+                            playheadPosition: $aggregateEvent->playhead,
+                            eventData: $this->serializer->encode($aggregateEvent->event),
+                            eventClass: $eventClass,
+                            occurredAt: $aggregateEvent->occurredAt->format('Y-m-d H:i:s.u')
+                        );
+                    },
+                    $eventStream->events
                 );
-            },
-            $eventStream->events
+
+                /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $eventClass */
+                $eventClass = \get_class($eventStream->id);
+
+                $storedEventStream = new StoredAggregateEventStream(
+                    aggregateId: $eventStream->id->toString(),
+                    aggregateIdClass: $eventClass,
+                    aggregateClass: $eventStream->aggregateClass,
+                    storedAggregateEvents: $storedEventStream,
+                    createdAt: (string) datetimeToString($eventStream->createdAt)
+                );
+
+                /** @noinspection PhpUnnecessaryLocalVariableInspection */
+                $promise = $isNew
+                    ? $this->store->save($storedEventStream)
+                    : $this->store->append($storedEventStream);
+
+                yield $promise;
+
+                /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
+                $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
+
+                if ($this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
+                {
+                    yield $this->snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
+                }
+
+                return $receivedEvents;
+            }
         );
-
-        /** @psalm-var class-string<\ServiceBus\EventSourcing\AggregateId> $eventClass */
-        $eventClass = \get_class($eventStream->id);
-
-        $storedEventStream = new StoredAggregateEventStream(
-            aggregateId: $eventStream->id->toString(),
-            aggregateIdClass: $eventClass,
-            aggregateClass: $eventStream->aggregateClass,
-            storedAggregateEvents: $storedEventStream,
-            createdAt: (string) datetimeToString($eventStream->createdAt)
-        );
-
-        /** @noinspection PhpUnnecessaryLocalVariableInspection */
-        $promise = $isNew
-            ? $this->store->save($storedEventStream)
-            : $this->store->append($storedEventStream);
-
-        yield $promise;
-
-        /** @var \ServiceBus\EventSourcing\Snapshots\Snapshot|null $loadedSnapshot */
-        $loadedSnapshot = yield $this->snapshotter->load($aggregate->id());
-
-        if ($this->snapshotter->snapshotMustBeCreated($aggregate, $loadedSnapshot))
-        {
-            yield $this->snapshotter->store(new Snapshot($aggregate, $aggregate->version()));
-        }
-
-        return $receivedEvents;
     }
 
     /**
@@ -394,8 +390,8 @@ final class EventStreamRepository
         $events = \array_map(
             function (StoredAggregateEvent $storedAggregateEvent): AggregateEvent
             {
-                /** @var \DateTimeImmutable $occuredAt */
-                $occuredAt = datetimeInstantiator($storedAggregateEvent->occuredAt);
+                /** @var \DateTimeImmutable $occurredAt */
+                $occurredAt = datetimeInstantiator($storedAggregateEvent->occurredAt);
 
                 /** @var \DateTimeImmutable $recordedAt */
                 $recordedAt = datetimeInstantiator($storedAggregateEvent->recordedAt);
@@ -409,7 +405,7 @@ final class EventStreamRepository
                     id: $storedAggregateEvent->eventId,
                     event: $event,
                     playhead: $storedAggregateEvent->playheadPosition,
-                    occuredAt: $occuredAt,
+                    occuredAt: $occurredAt,
                     recordedAt: $recordedAt
                 );
             },
@@ -454,24 +450,31 @@ final class EventStreamRepository
     /**
      * Since the format of the saved messages has changed, you need to add backward compatibility support.
      *
-     * @psalm-param class-string $toClass
+     * @template T of object
+     *
+     * @psalm-param non-empty-string $messagePayload
+     * @psalm-param class-string<T>  $toClass
+     *
+     * @psalm-return T
      */
     private function backwardCompatibilityDecoder(string $messagePayload, string $toClass): object
     {
         $data = jsonDecode($messagePayload);
 
-        if (!empty($data['message']) && !empty($data['namespace']))
+        if (\array_key_exists('message', $data) && \array_key_exists('namespace', $data))
         {
-            /** @psalm-suppress MixedArgument */
-            return $this->serializer->denormalize(
-                payload: $data['message'],
-                messageClass: $data['namespace']
+            /** @psalm-var array{message: array<array-key, mixed>, namespace: class-string<T>} $oldFormat */
+            $oldFormat = $data;
+
+            return $this->denormalizer->handle(
+                payload: $oldFormat['message'],
+                objectClass: $oldFormat['namespace']
             );
         }
 
-        return $this->serializer->denormalize(
+        return $this->denormalizer->handle(
             payload: $data,
-            messageClass: $toClass
+            objectClass: $toClass
         );
     }
 }

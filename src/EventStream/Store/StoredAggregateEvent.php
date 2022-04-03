@@ -8,7 +8,7 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\EventStream\Store;
 
@@ -23,6 +23,7 @@ final class StoredAggregateEvent
      * Event ID.
      *
      * @psalm-readonly
+     * @psalm-var non-empty-string
      *
      * @var string
      */
@@ -32,6 +33,7 @@ final class StoredAggregateEvent
      * Playhead position.
      *
      * @psalm-readonly
+     * @psalm-var positive-int
      *
      * @var int
      */
@@ -41,6 +43,7 @@ final class StoredAggregateEvent
      * Serialized event data.
      *
      * @psalm-readonly
+     * @psalm-var non-empty-string
      *
      * @var string
      */
@@ -63,7 +66,7 @@ final class StoredAggregateEvent
      *
      * @var string
      */
-    public $occuredAt;
+    public $occurredAt;
 
     /**
      * Recorded at datetime.
@@ -75,6 +78,9 @@ final class StoredAggregateEvent
     public $recordedAt;
 
     /**
+     * @psalm-param non-empty-string $eventId
+     * @psalm-param positive-int $playheadPosition
+     * @psalm-param non-empty-string $eventData
      * @psalm-param class-string $eventClass
      */
     public static function create(
@@ -82,18 +88,21 @@ final class StoredAggregateEvent
         int $playheadPosition,
         string $eventData,
         string $eventClass,
-        string $occuredAt
+        string $occurredAt
     ): self {
         return new self(
             eventId: $eventId,
             playheadPosition: $playheadPosition,
             eventData: $eventData,
             eventClass: $eventClass,
-            occurredAt: $occuredAt
+            occurredAt: $occurredAt
         );
     }
 
     /**
+     * @psalm-param non-empty-string $eventId
+     * @psalm-param positive-int $playheadPosition
+     * @psalm-param non-empty-string $eventData
      * @psalm-param class-string $eventClass
      */
     public static function restore(
@@ -115,6 +124,9 @@ final class StoredAggregateEvent
     }
 
     /**
+     * @psalm-param non-empty-string $eventId
+     * @psalm-param positive-int $playheadPosition
+     * @psalm-param non-empty-string $eventData
      * @psalm-param class-string $eventClass
      */
     private function __construct(
@@ -129,7 +141,7 @@ final class StoredAggregateEvent
         $this->playheadPosition = $playheadPosition;
         $this->eventData        = $eventData;
         $this->eventClass       = $eventClass;
-        $this->occuredAt        = $occurredAt;
+        $this->occurredAt        = $occurredAt;
         $this->recordedAt       = $recordedAt;
     }
 }

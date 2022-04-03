@@ -8,24 +8,19 @@
  * @license https://opensource.org/licenses/MIT
  */
 
-declare(strict_types = 0);
+declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing;
 
-use ServiceBus\EventSourcing\Indexes\IndexKey;
-
 /**
  * @internal
+ *
+ * @psalm-return non-empty-string
  */
 function createAggregateMutexKey(AggregateId $id): string
 {
-    return \sha1(\sprintf('aggregate:%s', $id->toString()));
-}
+    /** @psalm-var non-empty-string $key */
+    $key = \sha1(\sprintf('aggregate:%s', $id->toString()));
 
-/**
- * @internal
- */
-function createIndexMutex(IndexKey $indexKey): string
-{
-    return \sha1(\sprintf('index:%s', $indexKey->valueKey));
+    return $key;
 }
