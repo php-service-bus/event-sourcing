@@ -12,6 +12,7 @@ declare(strict_types=0);
 
 namespace ServiceBus\EventSourcing\Module;
 
+use Psr\Log\LoggerInterface;
 use ServiceBus\Common\Module\ServiceBusModule;
 use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\EventStream\EventStreamRepository;
@@ -168,7 +169,7 @@ final class EventSourcingModule implements ServiceBusModule
             new Reference(Snapshotter::class),
             new Reference(ObjectDenormalizer::class),
             $serializer,
-            new Reference('service_bus.logger'),
+            new Reference(LoggerInterface::class),
         ];
 
         $containerBuilder->addDefinitions([
@@ -196,7 +197,7 @@ final class EventSourcingModule implements ServiceBusModule
         $arguments = [
             new Reference($this->snapshotStoreServiceId),
             new Reference($this->customSnapshotStrategyServiceId),
-            new Reference('service_bus.logger'),
+            new Reference(LoggerInterface::class),
         ];
 
         $containerBuilder->addDefinitions([

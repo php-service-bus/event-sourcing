@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace ServiceBus\EventSourcing\Tests\Module;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use ServiceBus\EventSourcing\EventSourcingProvider;
 use ServiceBus\EventSourcing\Module\EventSourcingModule;
@@ -37,9 +38,9 @@ final class EventSourcingModuleTest extends TestCase
     {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->addDefinitions([
-            StorageConfiguration::class           => (new Definition(StorageConfiguration::class))->setArguments(['sqlite:///:memory:']),
-            DatabaseAdapter::class                => (new Definition(DoctrineDBALAdapter::class))->setArguments([new Reference(StorageConfiguration::class)]),
-            'service_bus.logger'                  => new Definition(NullLogger::class)
+            StorageConfiguration::class => (new Definition(StorageConfiguration::class))->setArguments(['sqlite:///:memory:']),
+            DatabaseAdapter::class      => (new Definition(DoctrineDBALAdapter::class))->setArguments([new Reference(StorageConfiguration::class)]),
+            LoggerInterface::class      => new Definition(NullLogger::class)
         ]);
 
         $module = EventSourcingModule::withSqlStorage(DatabaseAdapter::class);
