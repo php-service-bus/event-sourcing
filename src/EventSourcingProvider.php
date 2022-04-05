@@ -48,7 +48,8 @@ final class EventSourcingProvider
     /**
      * Load aggregate.
      *
-     * @psalm-param callable(Aggregate):\Generator $onLoaded
+     * @template T of Aggregate
+     * @psalm-param callable(T):mixed $onLoaded
      *
      * @psalm-return Promise<void>
      *
@@ -140,7 +141,8 @@ final class EventSourcingProvider
     /**
      * Revert aggregate to specified version.
      *
-     * @psalm-param callable(Aggregate):\Generator $onReverted
+     * @template T of Aggregate
+     * @psalm-param callable(T):\Generator $onReverted
      *
      * @psalm-return Promise<void>
      *
